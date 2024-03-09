@@ -14,7 +14,9 @@
  sw_unit=eV
  emin_plt=1.0
  emax_plt=3.0
+ sw_plt_ccd=0
 &ph
  ndim=1 1 1
  sw_HP=both
  sw_phrun=0
+ sw_plt_ph=0
