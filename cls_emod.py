@@ -17,7 +17,7 @@ class emod:
         prms = subs.get_prms()
 
     ### ----------------------------------------------------------------------------- ###
-    def run_debye():
+    def run_debye(self):
         """ execute debye temperature program """
         p = pathlib.Path(mat+".scf_Bmod.in")
         if ( p.exists() ):

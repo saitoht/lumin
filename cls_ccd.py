@@ -265,39 +265,39 @@ class ccd:
             print("*** ERROR: different alat between the grond state and the excited state!!!")
             sys.exit()
             
-        mass: float = [const.ELEMS_MASS[ele]*const.uatm/const.me for ele in elements_g]
+        mass:float = [const.ELEMS_MASS[ele]*const.uatm/const.me for ele in elements_g]
         alat_g = alat_g / const.Bohr
         alat_e = alat_e / const.Bohr
         pos_g = alat_g * np.dot( pos_g, plat_g )
         pos_e = alat_e * np.dot( pos_e, plat_e )
-        deltaQ_sq: float = 0.0
-        deltaR_sq: float = 0.0
-        count: int = 0
+        deltaQ_sq:float = 0.0
+        deltaR_sq:float = 0.0
+        count:int = 0
         for i, nel in enumerate(nelems_g):
             for j in range(nel):
                 deltaQ_sq += mass[i] * ( sum([(pos_e[count,k]-pos_g[count,k])**2. for k in range(3)]) )
                 deltaR_sq += sum([(pos_e[count,k]-pos_g[count,k])**2. for k in range(3)])
                 count += 1
-        self.deltaQ: float = np.sqrt(const.me/const.uatm)*const.Bohr * np.sqrt(deltaQ_sq)
-        self.deltaR: float = const.Bohr * np.sqrt(deltaR_sq)
-        self.M: float = deltaQ_sq / deltaR_sq
+        self.deltaQ:float = np.sqrt(const.me/const.uatm)*const.Bohr * np.sqrt(deltaQ_sq)
+        self.deltaR:float = const.Bohr * np.sqrt(deltaR_sq)
+        self.M:float = deltaQ_sq / deltaR_sq
 
-        cfunit: float = const.hbar*1.e10*np.sqrt(1./(const.ep*const.uatm))
-        self.Omegag: float = cfunit * np.sqrt(2. * prms.EFCg / (self.deltaQ**2.)) 
-        self.Omegae: float = cfunit * np.sqrt(2. * self.EFCe / (self.deltaQ**2.)) 
-        self.Sabs: float = self.EFCe / self.Omegae
-        self.Sem: float = prms.EFCg / self.Omegag
+        cfunit:float = const.hbar*1.e10*np.sqrt(1./(const.ep*const.uatm))
+        self.Omegag:float = cfunit * np.sqrt(2. * prms.EFCg / (self.deltaQ**2.)) 
+        self.Omegae:float = cfunit * np.sqrt(2. * self.EFCe / (self.deltaQ**2.)) 
+        self.Sabs:float = self.EFCe / self.Omegae
+        self.Sem:float = prms.EFCg / self.Omegag
         
     ### ----------------------------------------------------------------------------- ###
     def Line_shape(self):
         """ Line shape of optical spectra """
         if ( prms.sw_unit in {"eV","nm"} ):
-            self.energy: float = np.linspace(prms.emin_plt, prms.emax_plt, prms.ndive)
+            self.energy:float = np.linspace(prms.emin_plt, prms.emax_plt, prms.ndive)
         else:
-            self.energy: float = np.linspace(subs.E2lambda(prms.emax_plt),subs.E2lambda(prms.emin_plt),prms.ndive)
+            self.energy:float = np.linspace(subs.E2lambda(prms.emax_plt),subs.E2lambda(prms.emin_plt),prms.ndive)
             self.energy = subs.lambda2E(self.energy)
-        self.Lem: float = np.zeros(prms.ndive)
-        self.Labs: float = np.zeros(prms.ndive)
+        self.Lem:float = np.zeros(prms.ndive)
+        self.Labs:float = np.zeros(prms.ndive)
         for n in range(prms.nmax):
             self.Lem[:] += ( np.exp(-self.Sem)*self.Sem**float(n) / float(np.math.factorial(n)) ) * subs.Lorentzian(self.EZPL - float(n)*self.Omegag - self.energy[:])
             self.Labs[:] += ( np.exp(-self.Sabs)*self.Sabs**float(n) / float(np.math.factorial(n)) ) * subs.Lorentzian(self.EZPL + float(n)*self.Omegae - self.energy[:])
@@ -308,21 +308,21 @@ class ccd:
     def Ecenter_shift(self)
         """ Eem shift and Eabs shift as a function of temperature """
         ### revise to prms.tempmin in the future
-        self.tempmin: float = 1.
-        self.tempmax: float = 1.e3
-        self.temp: float = np.linspace(self.tempmin, self.tempmax, prms.ndivtemp)
-        self.Eabs: float = prms.Eabs0 + ((self.Omegae**2. - self.Omegag**2.)/(self.Omegag**2.)) * const.kB*self.temp
-        self.Eem: float = prms.Eem0 + ((self.Omegag**2. - self.Omegae**2.)/(self.Omegae**2.) +
+        self.tempmin:float = 1.
+        self.tempmax:float = 1.e3
+        self.temp:float = np.linspace(self.tempmin, self.tempmax, prms.ndivtemp)
+        self.Eabs:float = prms.Eabs0 + ((self.Omegae**2. - self.Omegag**2.)/(self.Omegag**2.)) * const.kB*self.temp
+        self.Eem:float = prms.Eem0 + ((self.Omegag**2. - self.Omegae**2.)/(self.Omegae**2.) +
                                        (8.*(self.Omegag**4.)*self.deltaS)/(self.Omegae**2.*(self.Omegag**2.+self.Omegae**2.)*prms.Eem0)) * prms.kB*self.temp
 
     ### ----------------------------------------------------------------------------- ###
     def FWHM(self):
         """ Full width half maximum of transitions and its temperature dependence """
-        self.temp: float = np.linspace(self.tempmin, self.tempmax, prms.ndivtemp)
-        self.W0: float = self.Sem * self.Omegag * np.sqrt(8.0*np.log(2.)) / np.sqrt(self.Sabs)
+        self.temp:float = np.linspace(self.tempmin, self.tempmax, prms.ndivtemp)
+        self.W0:float = self.Sem * self.Omegag * np.sqrt(8.0*np.log(2.)) / np.sqrt(self.Sabs)
         if ( prms.sw_unit == "nm" ):
-            W0min: float = prms.Eem0 - 0.5*self.W0
-            W0max: float = prms.Eem0 + 0.5*self.W0
+            W0min:float = prms.Eem0 - 0.5*self.W0
+            W0max:float = prms.Eem0 + 0.5*self.W0
             self.W0 = subs.E2lambda(W0min) - subs.E2lambda(W0max)
-        self.W: float = self.W0 * np.sqrt( 1. / np.tanh(self.Omegae/(2.*prms.kB*self.temp)) )
+        self.W:float = self.W0 * np.sqrt( 1. / np.tanh(self.Omegae/(2.*const.kB*self.temp)) )
         
