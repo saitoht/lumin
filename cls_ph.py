@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 ### 9th, Mar., 2024   H. Saito
-=======
-### 12th, Feb., 2024   H. Saito
->>>>>>> 2482b5ac0daf49ca16f8c4b31e4e33b5393f7357
 ### See "A. Alkauskas, B. B. Buckley, D. D. Awschalom, & C. G. Van de Walle,
 ###      First-principels theory of the luminescence lineshape for the triplet transition in diamond NV centres, New J. Phys. 16 (2014) 073026."
 import numpy as np
