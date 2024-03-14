@@ -1,6 +1,5 @@
 ### Lumin.py: Estimation of luminescent properties of materials
 ###           Consolidate cls_emod.py, cls_ccd.py, and cls_ph.py
-### H. Saito  9th, Mar., 2024
 import sys
 import cls_emod as emod
 import cls_ccd as ccd

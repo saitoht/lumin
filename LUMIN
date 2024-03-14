@@ -1,4 +1,4 @@
-&system
+&sys
  mat=al2o3_cr
  nc= 20
  exe=$HOME/qe7.2/bin

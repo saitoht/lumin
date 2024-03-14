@@ -21,6 +21,7 @@ class ccd:
     ### ----------------------------------------------------------------------------- ###
     def run_ccd(self):
         """ execute ccd calculation program """
+        
         # For plotting
         plt.rcParams['font.family'] = 'Helvetica'
         plt.rcParams["xtick.labelsize"]=15.0
@@ -68,6 +69,7 @@ class ccd:
             print("* FWHM (@ 0K) ({sunit}): ".format(sunit=prms.sw_unit), self.W0*unit)
             print("* DeltaR (ang): ", self.deltaR)
             print("* DeltaQ (sqrt(amu)*ang): ", self.deltaQ)
+            print("* DeltaQ[1:3]: ", self.dQvec)
             print("* hbar*Omegag ({sunit}): ".format(sunit=prms.sw_unit), self.Omegag*unit)
             print("* hbar*Omegae ({sunit}): ".format(sunit=prms.sw_unit), self.Omegae*unit)
         elif ( prms.sw_unit == "nm" ):
@@ -80,6 +82,7 @@ class ccd:
             print("* FWHM (@ 0K) (nm): ", subs.E2lambda(self.W0))
             print("* DeltaR (ang): ", self.deltaR)
             print("* DeltaQ (sqrt(amu)*ang): ", self.deltaQ)
+            print("* DeltaQ[1:3]: ", self.dQvec)
             print("* hbar*Omegag (nm): ", subs.E2lambda(self.Omegag))
             print("* hbar*Omegae (nm): ", subs.E2lambda(self.Omegae))
         else:
@@ -144,6 +147,7 @@ class ccd:
     ### ----------------------------------------------------------------------------- ###
     def calc_Eeg(self, state:str):
         """ calculate total enegies of intermediate states """
+        
         print("* --- gernerate POSCAR in between ground & excited states --- *")
         (alat_g, plat_g, elements_g, nelems_g, natm_g, pos_g) = get_POSCAR("POSCAR_"+prms.stateg)
         (alat_e, plat_e, elements_e, nelems_e, natm_e, pos_e) = get_POSCAR("POSCAR_"+prms.statee)
@@ -197,6 +201,7 @@ class ccd:
     ### ----------------------------------------------------------------------------- ###
     def fit_Ecurve(self, state:str, EFC:float):
         """ fiting Energy curve by polynomial """
+        
         print("* --- Fitting energy curve --- *")
         fn:str = "DATA_"+stat+".dat"
         Q, Etot = np.loadtxt(fn,dtype='float',unpack=True,ndmin=0)
@@ -244,6 +249,7 @@ class ccd:
     ### ----------------------------------------------------------------------------- ###
     def get_Stokes(self):
         """ Stokes shift, Franck-Condon parameter, and zero-phonon energy """
+        
         self.deltaS: float = prms.Eabs0 - prms.Eem0
         self.EFCe: float = self.deltaS - prms.EFCg
         self.EZPL: float = prms.Eem0 + prms.EFCg
@@ -251,6 +257,7 @@ class ccd:
     ### ----------------------------------------------------------------------------- ###
     def get_DeltaQ(self):
         """ normal coordinate difference DetaQ """
+        
         pg = pathlib.Path("POSCAR_"+prms.stateg)
         pe = pathlib.Path("POSCAR_"+prms.statee)
         if ( not pg.exists() ):
@@ -272,13 +279,16 @@ class ccd:
         pos_e = alat_e * np.dot( pos_e, plat_e )
         deltaQ_sq:float = 0.0
         deltaR_sq:float = 0.0
+        dQvec_sq:float = np.zeros(3)
         count:int = 0
         for i, nel in enumerate(nelems_g):
             for j in range(nel):
                 deltaQ_sq += mass[i] * ( sum([(pos_e[count,k]-pos_g[count,k])**2. for k in range(3)]) )
                 deltaR_sq += sum([(pos_e[count,k]-pos_g[count,k])**2. for k in range(3)])
+                dQvec_sq[:] += mass[i] * (pos_e[count,:]-pos_g[count,:])**2.
                 count += 1
         self.deltaQ:float = np.sqrt(const.me/const.uatm)*const.Bohr * np.sqrt(deltaQ_sq)
+        self.dQvec:float = np.sqrt(const.me/const.uatm)*const.Bohr * np.array([np.sqrt(dQvec_sq[i]) for i in range(3)])
         self.deltaR:float = const.Bohr * np.sqrt(deltaR_sq)
         self.M:float = deltaQ_sq / deltaR_sq
 
@@ -291,6 +301,7 @@ class ccd:
     ### ----------------------------------------------------------------------------- ###
     def Line_shape(self):
         """ Line shape of optical spectra """
+        
         if ( prms.sw_unit in {"eV","nm"} ):
             self.energy:float = np.linspace(prms.emin_plt, prms.emax_plt, prms.ndive)
         else:
@@ -307,6 +318,7 @@ class ccd:
     ### ----------------------------------------------------------------------------- ###
     def Ecenter_shift(self)
         """ Eem shift and Eabs shift as a function of temperature """
+        
         ### revise to prms.tempmin in the future
         self.tempmin:float = 1.
         self.tempmax:float = 1.e3
@@ -318,6 +330,7 @@ class ccd:
     ### ----------------------------------------------------------------------------- ###
     def FWHM(self):
         """ Full width half maximum of transitions and its temperature dependence """
+        
         self.temp:float = np.linspace(self.tempmin, self.tempmax, prms.ndivtemp)
         self.W0:float = self.Sem * self.Omegag * np.sqrt(8.0*np.log(2.)) / np.sqrt(self.Sabs)
         if ( prms.sw_unit == "nm" ):
@@ -325,4 +338,3 @@ class ccd:
             W0max:float = prms.Eem0 + 0.5*self.W0
             self.W0 = subs.E2lambda(W0min) - subs.E2lambda(W0max)
         self.W:float = self.W0 * np.sqrt( 1. / np.tanh(self.Omegae/(2.*const.kB*self.temp)) )
-        

@@ -8,6 +8,7 @@ class subs:
     ### ----------------------------------------------------------------------------- ###
     def __init__(self):
         """ Constructor: initialize parameters"""
+        
         # Physical constatns
         self.Bohr:float = 0.529177210903        # \AA
         self.Ry:float = 13.6057039763           # eV
@@ -52,8 +53,8 @@ class subs:
     ### ----------------------------------------------------------------------------- ###
     def get_prms(self):
         """ get parameters for calculations """
+        
         print("*** Start reading LUMIN ***")
-
         ### default values
         # for system
         self.mat:int = ""
@@ -62,6 +63,8 @@ class subs:
         # for emod
         self.brav:str = "cub"
         self.sw_plt_emod:bool = False
+        self.dratio:float = 0.02
+        self.ndiv_emod:int = 15
         # for ccd
         self.gamma:float = 1.e-5
         self.Eabs0:float = 2.146
@@ -100,7 +103,7 @@ class subs:
                 inputs:str = f.readlines()
             for ip in inputs:
                 line:str = [ipp.replace("\n","") for ipp in ip.split()]
-                if ( line[0] == "&system" ):
+                if ( line[0] == "&sys" ):
                     sw_sys:bool = True
                     sw_emod:bool = False
                     sw_ph:bool = False
@@ -166,6 +169,18 @@ class subs:
                     else:
                         self.sw_plt_emod:bool = bool(int(line[0].replace("sw_plt_emod=","")))
                     print("* sw_plt_emod: ", self.sw_plt_emod)
+                elif ( sw_emod and line[0][0:7] == "dratio=" ):
+                    if ( len(line) == 2 ):
+                        self.dratio:float = float(line[1])
+                    else:
+                        self.dratio:float = float(line[0].replace("dratio=",""))
+                    print("* dratio: ", self.dratio)
+                elif ( sw_emod and line[0][0:10] == "ndiv_emod=" ):
+                    if ( len(line) == 2 ):
+                        self.ndiv_emod:int = int(line[1])
+                    else:
+                        self.ndiv_emod:int = int(line[0].replace("ndiv_emod=",""))
+                    print("* ndiv_emod: ", self.ndiv_emod)
                 else:
                     pass
 
@@ -334,10 +349,34 @@ class subs:
                                 -p : sw_plt == True for all script {False}
                         [-emod] -pemod : sw_plt_emod == True {False}
                                 -brav {brav} : Bravias type (cub, tet, hex, mono, tri, ...) {cub}
+                                -dr {dratio} : distortion ratio
+                                -ndem {ndiv_emod} : number of devision for elastic moduli calc.
                         [-ccd]  -pccd : sw_plt_ccd == True {False}
+                                -Eabs {Eabs0} : absorption energy by first-principles calc.
+                                -Eem {Eem0} : emission energy by first-principles calc.
+                                -FC {EFCg} : Frank-Condon params. for ground state energy curve
+                                -dQ {deltaQ} : difference of the configuration coordinate b/w exited & ground
+                                -I0 {I0} : Intensity of the spectrum
+                                -gamma {gamma} : broadness params. of Lorentzian
+                                -eg : generate intermediate structures b/w excited & ground or not {False}
+                                -stateg {stateg} : name of the ground state
+                                -statee {statee} : name of the excited state
+                                -unit {sw_unit} : select unit of quantities (eV, cm^-1, nm) {eV}
+                                -emin {emin_plt} : energy min. for plotting
+                                -emax {emax_plt} : energy max. for plotting
+                                -nmax {nmax} : cut-off number of summation, larger value is plausible {30}
+                                -nde {ndive} : number of devision for energy
+                                -ndt {ndivtemp} : number of devision for temperature
+                                -ndeg {ndiv_eg} : number of devision for intermediate structures
                         [-ph]   -pph : sw_plt_ph == True {False}
-                                **** revise this
-                                """
+                                -ndim {ndim[1:3]} : number of dimension for generating supercell
+                                -HR {sw_HR} : switch for Huang-Rhys params. (****)
+                                -phrun : perform phonon calc. or not {False}
+                                -ndive_ph {ndive_ph} : number of division for phonon spectrum
+                                -emin_ph {emin_ph} : energy min. for phonon spectrum
+                                -emax_ph {emax_ph} : energy max. for phonon spectrum
+                                -sw_qk {sw_qk} : switch of q_k evaluation
+                                -sigma {sigma} : standard derivation of Gaussian """
             print(helpmessage)
             sys.exit()
         self.sw_run_emod:bool = False
@@ -381,7 +420,11 @@ class subs:
             print("* sw_plt_ph: ", self.sw_plt_ph)
         # emod
         if ( "-brav" in args ):
-            brav: str = args[args.index("-brav")+1]
+            self.brav:str = args[args.index("-brav")+1]
+        if ( "-dr" in args ):
+            self.dratio:float = float(args[args.index("-dr")+1])
+        if ( "-ndem" in args ):
+            self.ndiv_emod:int = int(args[args.index("-ndem")+1])
         # ccd
         if ( "-Eabs" in args ):
             self.Eabs0:float = float(args[args.index("-Eabs")+1])
@@ -437,6 +480,7 @@ class subs:
     ### ----------------------------------------------------------------------------- ###
     def get_POSCAR(self, fn:str):
         """ get information from POSCAR """
+        
         with open(fn, "r") as f:
             data:str = f.readlines()
         alat:float = float(data[1].split()[0]) / self.Bohr
@@ -457,6 +501,7 @@ class subs:
     ### ----------------------------------------------------------------------------- ###
     def get_FORCE(self, fn:str):
         """ get force information of ground & excited states """
+        
         p = pathlib.Path(fn)
         if ( not p.exists() ):
             print("*** ERROR: "+fn+" does not exist!!!")
@@ -469,20 +514,24 @@ class subs:
     ### ----------------------------------------------------------------------------- ###
     def Lorentzian(self, x:float):
         """ define Lorentzian """
+        
         ### can you define this by lambda formula
         return (1./np.pi)*(0.5*self.gamma / (x**2.+(0.5*self.gamma)**2.))
 
     ### ----------------------------------------------------------------------------- ###
     def Gaussian(self, x:float):
         """ define Gaussian """
+        
         return (1./(self.sigma*np.sqrt(2.*np.pi))) * np.exp(-x**2./(2.*self.sigma**2.))
 
     ### ----------------------------------------------------------------------------- ###
     def E2lambda(self, energy:float):
         """ transfrom energy to wavelength """
+        
         return 1239.8/energy  # nm
 
     ### ----------------------------------------------------------------------------- ###
     def lambda2E(self, lam:float):
         """ transform wavelength to energy """
+        
         return 1239.8/lam     # eV
