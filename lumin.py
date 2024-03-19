@@ -1,10 +1,10 @@
 ### Lumin.py: Estimation of luminescent properties of materials
 ###           Consolidate cls_emod.py, cls_ccd.py, and cls_ph.py
 import sys
-import cls_emod as emod
-import cls_ccd as ccd
-import cls_ph as ph
 import cls_subs as subs
+import cls_emod as emod
+import cls_ph as ph
+import cls_ccd as ccd
 
 if __name__=="__main__":
     const = subs.subs()

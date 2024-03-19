@@ -23,6 +23,7 @@ class subs:
         self.eV2cm:float = 8065.73              # cm^-1
         self.THz2eV:float = 0.00413566553853599 # THz to eV
         self.fc2THz:float = 15.633302           # factor to convert into THz
+        self.fceV2nm:float = 1239.8             # factor to convert eV into nm
         
         # element mass
         self.ELEMS_MASS = {"H":  1.00798, "He": 4.0026,  "Li": 6.968,   "Be": 9.01218, "B":  10.814,
@@ -76,12 +77,12 @@ class subs:
         self.sw_unit:str = "eV"
         self.stateg:str = "4A2g"
         self.statee:str = "4T2g"
-        self.emin_plt:float = 1.0
-        self.emax_plt:float = 3.0
+        self.emin_ccd:float = 1.0
+        self.emax_ccd:float = 3.0
         self.I0:float = 1.0
         self.nmax:int = 30
-        self.ndive:int = 1000000
-        self.ndivtemp:int = 1000
+        self.ndiv_e:int = 1000000
+        self.ndiv_temp:int = 1000
         self.ndiv_eg:int = 12
         # for ph
         self.ndim:int = [1,1,1]
@@ -89,7 +90,7 @@ class subs:
         self.sw_phrun:bool = False
         self.sw_plt_ph:bool = False
         self.sigma:float = 6.e-3
-        self.ndive_ph:int = 1000000
+        self.ndiv_ph:int = 1000000
         self.emin_ph:float = 0.0
         self.emax_ph:float = 1.0
         
@@ -251,36 +252,36 @@ class subs:
                     else:
                         self.statee:str = line[0].replace("statee=","")
                     print("* statee: ", self.statee)
-                elif ( sw_ccd and line[0][0:9] == "emin_plt=" ):
+                elif ( sw_ccd and line[0][0:9] == "emin_ccd=" ):
                     if ( len(line) == 2 ):
-                        self.emin_plt:float = float(line[1])
+                        self.emin_ccd:float = float(line[1])
                     else:
-                        self.emin_plt:float = float(line[0].replace("emin_plt=",""))
-                    print("* emin_plt (eV): ", self.emin_plt)
-                elif ( sw_ccd and line[0][0:9] == "emax_plt=" ):
+                        self.emin_ccd:float = float(line[0].replace("emin_ccd=",""))
+                    print("* emin_ccd (eV): ", self.emin_ccd)
+                elif ( sw_ccd and line[0][0:9] == "emax_ccd=" ):
                     if ( len(line) == 2 ):
-                        self.emax_plt:float = float(line[1])
+                        self.emax_ccd:float = float(line[1])
                     else:
-                        self.emax_plt:float = float(line[0].replace("emax_plt=",""))
-                    print("* emax_plt (eV): ", self.emax_plt)
+                        self.emax_ccd:float = float(line[0].replace("emax_ccd=",""))
+                    print("* emax_ccd (eV): ", self.emax_ccd)
                 elif ( sw_ccd and line[0][0:5] == "nmax=" ):
                     if ( len(line) == 2 ):
                         self.nmax:int = int(line[1])
                     else:
                         self.nmax:int = int(line[0].replace("nmax=",""))
                     print("* nmax: ", self.nmax)
-                elif ( sw_ccd and line[0][0:6] == "ndive=" ):
+                elif ( sw_ccd and line[0][0:7] == "ndiv_e=" ):
                     if ( len(line) == 2 ):
-                        self.ndive:int = int(line[1])
+                        self.ndiv_e:int = int(line[1])
                     else:
-                        self.ndive:int = int(line[0].replace("ndive=",""))
-                    print("* ndive: ", self.ndive)
-                elif ( sw_ccd and line[0][0:9] == "ndivtemp=" ):
+                        self.ndiv_e:int = int(line[0].replace("ndiv_e=",""))
+                    print("* ndiv_e: ", self.ndiv_e)
+                elif ( sw_ccd and line[0][0:10] == "ndiv_temp=" ):
                     if ( len(line) == 2 ):
-                        self.ndivtemp:int = int(line[1])
+                        self.ndiv_temp:int = int(line[1])
                     else:
-                        self.ndivtemp:int = int(line[0].replace("ndivtemp=",""))
-                    print("* ndivtemp: ", self.ndivtemp)
+                        self.ndiv_temp:int = int(line[0].replace("ndiv_temp=",""))
+                    print("* ndiv_temp: ", self.ndiv_temp)
                 elif ( sw_ccd and line[0][0:8] == "ndiv_eg=" ):
                     if ( len(line) == 2 ):
                         self.ndiv_eg:int = int(line[1])
@@ -298,18 +299,18 @@ class subs:
                         self.ndim:int = [int(line[0].replace("ndim=","")),int(line[1]),int(line[2])]
                     print("* ndim: ", self.ndim)
                     self.ndim = np.array(self.ndim)
-                elif ( sw_ph and line[0][0:5] == "emin=" ):
+                elif ( sw_ph and line[0][0:7] == "emin_ph=" ):
                     if ( len(line) == 2 ):
-                        self.emin:float = float(line[1])
+                        self.emin_ph:float = float(line[1])
                     else:
-                        self.emin:float = float(line[0].replace("emin=",""))
-                    print("* emin: ", self.emin)
-                elif ( sw_ph and line[0][0:5] == "emax=" ):
+                        self.emin_ph:float = float(line[0].replace("emin_ph=",""))
+                    print("* emin_ph: ", self.emin_ph)
+                elif ( sw_ph and line[0][0:7] == "emax_ph=" ):
                     if ( len(line) == 2 ):
-                        self.emax:float = float(line[1])
+                        self.emax_ph:float = float(line[1])
                     else:
-                        self.emax:float = float(line[0].replace("emax=",""))
-                    print("* emax: ", self.emax)
+                        self.emax_ph:float = float(line[0].replace("emax_ph=",""))
+                    print("* emax_ph: ", self.emax_ph)
                 elif ( sw_ph and line[0][0:6] == "sigma=" ):
                     if ( len(line) == 2 ):
                         self.sigma:float = float(line[1])
@@ -362,17 +363,17 @@ class subs:
                                 -stateg {stateg} : name of the ground state
                                 -statee {statee} : name of the excited state
                                 -unit {sw_unit} : select unit of quantities (eV, cm^-1, nm) {eV}
-                                -emin {emin_plt} : energy min. for plotting
-                                -emax {emax_plt} : energy max. for plotting
+                                -emin_ccd {emin_ccd} : energy min. for plotting
+                                -emax_ccd {emax_ccd} : energy max. for plotting
                                 -nmax {nmax} : cut-off number of summation, larger value is plausible {30}
-                                -nde {ndive} : number of devision for energy
-                                -ndt {ndivtemp} : number of devision for temperature
+                                -nde {ndiv_e} : number of devision for energy
+                                -ndt {ndiv_temp} : number of devision for temperature
                                 -ndeg {ndiv_eg} : number of devision for intermediate structures
                         [-ph]   -pph : sw_plt_ph == True {False}
                                 -ndim {ndim[1:3]} : number of dimension for generating supercell
                                 -HR {sw_HR} : switch for Huang-Rhys params. (****)
                                 -phrun : perform phonon calc. or not {False}
-                                -ndive_ph {ndive_ph} : number of division for phonon spectrum
+                                -nde_ph {ndiv_ph} : number of division for phonon spectrum
                                 -emin_ph {emin_ph} : energy min. for phonon spectrum
                                 -emax_ph {emax_ph} : energy max. for phonon spectrum
                                 -sw_qk {sw_qk} : switch of q_k evaluation
@@ -446,16 +447,16 @@ class subs:
             self.stateg:str = args[args.index("-statee")+1]
         if ( "-unit" in args ):
             self.sw_unit:str = args[args.index("-unit")+1]
-        if ( "-emin" in args ):
-            self.emin_plt:float = float(args[args.index("-emin")+1])
-        if ( "-emax" in args ):
-            self.emax_plt:float = float(args[args.index("-emax")+1])
+        if ( "-emin_ccd" in args ):
+            self.emin_ccd:float = float(args[args.index("-emin_ccd")+1])
+        if ( "-emax_ccd" in args ):
+            self.emax_ccd:float = float(args[args.index("-emax_ccd")+1])
         if ( "-nmax" in args ):
             self.nmax:int = int(args[args.index("-nmax")+1])
         if ( "-nde" in args ):
-            self.ndive:int = int(args[args.index("-nde")+1])
+            self.ndiv_e:int = int(args[args.index("-nde")+1])
         if ( "-ndt" in args ):
-            self.ndivtemp:int = int(args[args.index("-ndt")+1])
+            self.ndiv_temp:int = int(args[args.index("-ndt")+1])
         if ( "-ndeg" in args ):
             self.ndiv_eg:int = int(args[args.index("-ndeg")+1])
         # ph
@@ -466,8 +467,8 @@ class subs:
             self.sw_HR:str = args[args.index("-HR")+1]
         if ( "-phrun" in args ):
             self.sw_phrun:bool = True
-        if ( "-ndive_ph" in args ):
-            self.ndive_ph:int = int(args[args.index("-ndive_ph")+1])
+        if ( "-nde_ph" in args ):
+            self.ndiv_ph:int = int(args[args.index("-nde_ph")+1])
         if ( "-emin_ph" in args ):
             self.emin_ph:float = float(args[args.index("-emin_ph")+1])
         if ( "-emax_ph" in args ):
@@ -504,7 +505,7 @@ class subs:
         
         p = pathlib.Path(fn)
         if ( not p.exists() ):
-            print("*** ERROR: "+fn+" does not exist!!!")
+            print("*** ERROR: {fn} does not exist!!!".format(fn=fn))
             sys.exit()
         data: str = np.loadtxt(fn,dtype="str",unpack=True,ndmin=0)
         Force: float = [[float(data[6,i]),float(data[7,i]),float(data[8,i])] for i in range(len(data[0]))]
@@ -528,10 +529,10 @@ class subs:
     def E2lambda(self, energy:float):
         """ transfrom energy to wavelength """
         
-        return 1239.8/energy  # nm
+        return const.fceV2nm/energy  # nm
 
     ### ----------------------------------------------------------------------------- ###
     def lambda2E(self, lam:float):
         """ transform wavelength to energy """
         
-        return 1239.8/lam     # eV
+        return const.fceV2nm/lam     # eV

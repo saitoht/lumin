@@ -1,4 +1,3 @@
-### 9th, Mar., 2024   H. Saito
 ### See "A. Alkauskas, B. B. Buckley, D. D. Awschalom, & C. G. Van de Walle,
 ###      First-principels theory of the luminescence lineshape for the triplet transition in diamond NV centres, New J. Phys. 16 (2014) 073026."
 import numpy as np
@@ -11,12 +10,15 @@ class ph:
     """ Class: Phonon calculations """
     ### ----------------------------------------------------------------------------- ###
     def __init__(self):
+        """ Constructor of ph """
+        
         const = subs.subs()
         prms = subs.get_prms()
 
     ### ----------------------------------------------------------------------------- ###
     def run_phonon(self):
-        """ execute phonon calculations """    
+        """ execute phonon calculations """
+        
         if ( prms.sw_phrun ):
             phonon()
         if ( not prms.sw_HR == "none" ):
@@ -25,24 +27,25 @@ class ph:
     ### ----------------------------------------------------------------------------- ###
     def phonon(self):
         """ Frozen phonon calculation """
+        
         print("* --- Phonon calculation --- *")
         sub.run(["conda activate phonopy"], shell=True)
         sub.run(["phonopy --qe -d --dim='{nd1} {nd2} {nd3}' -c {mat}.scf.in".format(nd1=prms.ndim[0], nd2=prms.ndim[1], nd3 = prms.ndim[2], mat=prms.mat)], shell=True)
         sub.run(["ls -lrt supercell-* > lsout"], shell=True)
-        force_command: str = "phonopy -f "
+        force_command:str = "phonopy -f "
         data:str = np.loadtxt("lsout",dtype="str",unpack=True,ndmin=0)
         files:str = data[len(data)-1]
         for fi in files:
             ncsc:str = fi.replace("supercell-","").replace(".in","")
             p = pathlib.Path(ncsc)
             if ( not p.is_dir() ):
-                sub.run(["mkdir "+ncsc], shell=True)
+                sub.run(["mkdir {ncsc}".format(ncsc=ncsc)], shell=True)
                 os.chdir(ncsc)
-                sub.run(["cat ../header.in ../"+fi+" >| "+prms.mat+"-"+ncsc+".scf.in"], shell=True)
+                sub.run(["cat ../header.in ../{fi} >| {mat}-{ncsc}.scf.in".format(fi=fi, mat=prms.mat, ncsc=ncsc)], shell=True)
                 # run scf calculation
-                sub.run(["mpirun -np "+str(prms.nc)+" "+prms.exe+"/pw.x < "+prms.mat+"-"+ncsc+".scf.in > "+prms.mat+"-"+ncsc+".scf.out"], shell=True)
-                sub.run(["rm work/"+prms.mat+".save/wfc*"], shell=True)
-                force_command += ncsc+"/"+prms.mat+"-"+ncsc+".scf.out "
+                sub.run(["mpirun -np {nc} {exe}/pw.x < {mat}-{ncsc}.scf.in > {mat}-{ncsc}.scf.out".format(nc=prms.nc, exe=prms.exe, mat=prms.mat, ncsc=ncsc)], shell=True)
+                sub.run(["rm work/{mat}.save/wfc*".format(mat=prms.mat)], shell=True)
+                force_command += "{ncsc}/{mat}-{ncsc}.scf.out ".format(mat=prms.mat, ncsc=ncsc)
                 os.chdir("../")
             
         sub.run([force_command], shell=True)
@@ -64,7 +67,7 @@ class ph:
             sub.run(["conda activate phonopy"], shell=True)
             sub.run(["phonopy --qpoints='0 0 0' --writedm"], shell=True)
         data = yaml.load(open("qpoints.yaml","r"),Loader=yaml.Loader)
-        self.dynmat: complex = []
+        self.dynmat:complex = []
         dynmat_data = data['phonon'][0]['dynamical_matrix']
         for row in dynmat_data:
             vals = np.reshape(row, (-1,2))
@@ -85,8 +88,8 @@ class ph:
             for j in range(nel):
                 mass.append(const.ELEMS_MASS[elements[i]]*const.uatm/const.me)
         if ( sw_qk in {"force","both"} ):
-            Force_g:float = subs.get_FORCE("FORCE_"+prms.stateg+".dat")
-            Force_e:float = subs.get_FORCE("FORCE_"+prms.statee+".dat")
+            Force_g:float = subs.get_FORCE("FORCE_"+prms.stateg)
+            Force_e:float = subs.get_FORCE("FORCE_"+prms.statee)
         
         for i in range(natm):
             for j in range(3):
@@ -99,9 +102,9 @@ class ph:
         for i in range(self.nmode):
             self.Sk[i]:float = self.freq[i] * self.qk[i]**2. / ( 2.*const.Ry )
             self.Sk_force[i]:float = self.freq[i] * self.qk_force[i]**2. / ( 2.*const.Ry )
-        energy:float = np.linspace(prms.emin_ph, prms.emax_ph, prms.ndive_ph)
-        self.Sspec:float = np.zeros(prms.ndive)
-        self.Sspec_force:float = np.zeros(prms.ndive)
+        energy:float = np.linspace(prms.emin_ph, prms.emax_ph, prms.ndiv_ph)
+        self.Sspec:float = np.zeros(prms.ndiv_ph)
+        self.Sspec_force:float = np.zeros(prms.ndiv_ph)
         self.Stot:float = 0.0
         self.Stot_force:float = 0.0
         for i in range(self.nmode):
