@@ -60,66 +60,68 @@ class emod:
     def calc_Bmod(self):
         """ calculate volume dependencen of the total energy """
         
-        print("* --- Bulk Modulus --- *")
+        print("*** First-principles for Bulk Modulus ***")
         p = pathlib.Path("Bmod")
         if ( not p.is_dir() ):
             sub.run(["mkdir Bmod"], shell=True)
         os.chdir("Bmod")
-        delta: float = np.linspace(1.-prms.dratio, 1.+prms.dratio, prms.ndiv_emod)
+        delta:float = np.linspace(1.-prms.dratio, 1.+prms.dratio, prms.ndiv_emod)
         (alat0, plat, elements, nelems, natm, pos, volume0) = subs.get_POSCAR("../POSCAR0")
-        alat: float = alat0 * delta
-        fn: str = "DATA_Bmod"
+        alat:float = alat0 * delta
+        fn:str = "DATA_Bmod"
         p = pathlib.Path(fn)
         if ( not p.exists() ):
             with open(fn,"w") as f:
                 f.write("### delta  alat(Bohr)  volume(Bohr^3)  tote(Ry) \n")
             for i, al in enumerate(alat):
-                ndir: str = "alat"+str(round(al,6))
+                ndir:str = "alat"+str(round(al,6))
                 p = pathlib.Path(ndir)
             if ( not p.is_dir() ):
                 (te, vol) = qjob_dis(ndir, al, plat)
                 string = " {delta}   {alat}   {volume}   {tote} \n".format(delta=delta[i],alat=al,volume=vol,tote=te)
                 with open(fn,"a") as f:
                     f.write(string)
-            os.chdir("../")
+        os.chdir("../")
+        print("*")
 
     ### ----------------------------------------------------------------------------- ###
     def calc_Emod(self, epsilon:float, dfmat:float, sym:str):
         """ calculate strain dependence of the total energy """
         
-        print("* --- Elastic Constant {sym} --- *".format(sym=sym))
+        print("*** First-principles for Elastic Moduli {sym} ***".format(sym=sym))
         p = pathlib.Path(sym)
         if ( not p.is_dir() ):
             sub.run(["mkdir "+sym], shell=True)
         os.chdir(sym)
-        fn: str = "DATA_"+sym
+        fn:str = "DATA_"+sym
         p = pathlib.Path(fn)
         if ( not p.exists() ):
             with open(fn,"w") as f:
                 f.write("### delta  alat(Bohr)  volume(Bohr^3)  tote(Ry) \n")
         (alat, plat0, elements, nelems, natm, pos, volume0) = subs.get_POSCAR("../POSCAR0")
         for i, ep in enumerate(epsilon):
-            ndir: str = "delta"+str(round(ep,6))
+            ndir:str = "delta"+str(round(ep,6))
             p = pathlib.Path(ndir)
             if ( not p.is_dir() ):
-                plat: float = np.dot(dfmat[i],plat0)
+                plat:float = np.dot(dfmat[i],plat0)
                 (tote, volume) = qjob_dis(ndir, alat, plat)
                 string = " {delta}   {alat}   {volume}   {tote} \n".format(delta=ep,alat=alat,volume=volume,tote=tote)
                 with open(fn,"a") as f:
                     f.write(string)
-            os.chdir("../")
+        os.chdir("../")
+        print("*")
 
     ### ----------------------------------------------------------------------------- ###
     def Emod_fit(self, para:float, sym:str, ndiv:int = 15):
         """ Fitting the elastic modulus """
         
-        def BM_eq(x: float, E0: float, V0: float, B0: float, B0p: float):
+        def BM_eq(x:float, E0:float, V0:float, B0:float, B0p:float):
             """ Birch-Murnaghan equation of state """
-            q: float = (V0/x)**(2./3.) - 1.
-            y: float = E0 + (9.*V0*B0/16.) * ((q**3.)*B0p + (q**2.)*(-4.*q+2.))
+            q:float = (V0/x)**(2./3.) - 1.
+            y:float = E0 + (9.*V0*B0/16.) * ((q**3.)*B0p + (q**2.)*(-4.*q+2.))
             return y
 
-        def DeltaE(delta: float, coeff0: float, coeff1: float, coeff2: float):
+        def DeltaE(delta:float, coeff0:float, coeff1:float, coeff2:float):
             return coeff0 + coeff1 * delta + coeff2 * delta**2.
 
         fn:str = "{sym}/DATA_{sym}".format(sym=sym)
@@ -173,6 +175,7 @@ class emod:
     def get_Bmod(self, Bmod0:float):
         """ get Bulk modulus by fitting against Birch-Murnaghan equation of state """
 
+        print("*** Bulk modulus ***")
         if ( abs(Bmod0) < 1.e-5 ):
             Bmod0:float = 1.e2
         (alat, plat, elements, nelems, natm, pos, volume) = subs.get_POSCAR("POSCAR0")
@@ -181,7 +184,6 @@ class emod:
         Emod:float = Emod_fit(para,"Bmod")
         self.Bmod:float = const.AU2GPa * Emod[2]
         print("* Bulk modulus by fitting BM_eq (GPa): ", self.Bmod)
-        print("* --- Finish calculating Bulk modulus--- *")
         print("*")
 
     ### ----------------------------------------------------------------------------- ###
@@ -239,6 +241,7 @@ class emod:
             print("* Anisotropy constatn: ", Aniso)
             print("* Lames coefficient lambda: ", lamd)
             print("* Lames coefficient mu: ", mu)
+            print("*")
 
         elif ( brav == "tet" ):  # tetragonal
             ### See "A. H. Reshak, M. Jamal, DFT Calculation for Elastic Constants of Tetragonal Strucrure of
@@ -312,6 +315,7 @@ class emod:
             print("* Hill Shear modulus (GPa)", self.Gmod)
             print("* Young modulus (GPa): ", self.Ymod)
             print("* Poisson ratio nu: ", self.nu)
+            print("*")
         
         elif ( brav == "hex" ):  # simple hexagonal
             ### see for example, Z. Zhang, Z. H. Fu, R. F. Zhang, D. Legut, and H. B. Guo,
@@ -377,6 +381,7 @@ class emod:
             print("* Hill Shear modulus (GPa): ", self.Gmod)
             print("* Young modulus (GPa): ", self.Ymod)
             print("* Possion ratio: ", self.nu)
+            print("*")
             
         elif ( brav == "mono" ):  # Monoclinic
             print("*** Monoclinic system ***")
@@ -448,9 +453,10 @@ class emod:
             print("* C66 (GPa): ", self.C66)
             print("* C12 (GPa): ", self.C12)
             print("* C13 (GPa): ", self.C13)
+            print("*")
             
         else:
-            print("*** ERROR: brav should be 'cub', or 'hex'!!!")
+            print("*** ERROR in emod.get_Econst: brav should be 'cub', or 'hex'!!!")
             print("*** Other crystal systems are not implemented!!!")
             sys.exit()
 
@@ -463,7 +469,7 @@ class emod:
         (alat, plat, elements, nelems, natm, pos, Vol) = subs.get_POSCAR("POSCAR0")
         Mass_ele:float = [const.ELEMS_MASS[ele] for ele in elements]
         Mass:float = sum([Mass_ele[i] for i, ne in enumerate(nelems) for j in range(ne)])
-        rho:float = Mass*const.uatm/(Vol*((const.Bohr*1.e-10)**3.))
+        self.rho:float = Mass*const.uatm/(Vol*((const.Bohr*1.e-10)**3.))
         n:float = float(natm)
         self.vl:float = np.sqrt((3.*self.Bmod + 4.*self.Gmod)*1.e9/(3.*self.rho))
         self.vt:float = np.sqrt(self.Gmod*1.e9/self.rho)
@@ -478,3 +484,4 @@ class emod:
         print("* transverse velocity (m/s): ", self.vt)
         print("* mean velocity (m/s): ", self.vm)
         print("* Debye temperature (K): ", self.ThetaD)
+        print("*")

@@ -34,7 +34,8 @@ class ccd:
         calc_Line_shape()
         calc_Ecenter_shift()
         calc_FWHM()
-        
+
+        print("* check the parameters in ccd *")
         if ( prms.sw_unit in {"eV","cm^-1"} ):
             print("* Absorption energy ({sunit}): ".format(sunit=prms.sw_unit), prms.Eabs0*unit)
             print("* Emission energy ({sunit}): ".format(sunit=prms.sw_unit), prms.Eem0*unit)
