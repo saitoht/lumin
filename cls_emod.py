@@ -71,7 +71,7 @@ class emod:
                 ndir:str = "alat"+str(round(al,6))
                 p = pathlib.Path(ndir)
             if ( not p.is_dir() ):
-                (te, vol) = qjob_dis(ndir, al, plat)
+                (te, vol) = emod.qjob_dis(self, ndir, al, plat)
                 string = " {delta}   {alat}   {volume}   {tote} \n".format(delta=delta[i],alat=al,volume=vol,tote=te)
                 with open(fn,"a") as f:
                     f.write(string)
@@ -98,7 +98,7 @@ class emod:
             p = pathlib.Path(ndir)
             if ( not p.is_dir() ):
                 plat:float = np.dot(dfmat[i],plat0)
-                (tote, volume) = qjob_dis(ndir, alat, plat)
+                (tote, volume) = emod.qjob_dis(self, ndir, alat, plat)
                 string = " {delta}   {alat}   {volume}   {tote} \n".format(delta=ep,alat=alat,volume=volume,tote=tote)
                 with open(fn,"a") as f:
                     f.write(string)
@@ -187,18 +187,18 @@ class emod:
         para:float = [0.,0.,0.1]
         ep:float = np.linspace(-prms.dratio, prms.dratio, prms.ndiv_emod)
         if ( prms.brav == "cub" ):  # simple cubic
-            ### see for example, M. Jamal, S. J. Asadabadi, I. Ahmad, H. A. R. Aliabad,
-            ### Elastic constants of cubic crystals, Computational Materials Science 95 (2014) 592-599
+            """ see for example, M. Jamal, S. J. Asadabadi, I. Ahmad, H. A. R. Aliabad,
+             Elastic constants of cubic crystals, Computational Materials Science 95 (2014) 592-599 """
             print("*** Cubic system ***")
             print("* There are 3 independent elastic constants: ")
             print("* C11, C12, C44")
-            # C11 - C12
+            """ C11 - C12 """
             sym:str = "cub-uni"
             dfmat:float = np.array([np.diag([1.+d,1.-d,1./(1.-d**2.)]).tolist() for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
             E10:float = ccd.Emod_fit(self, para, sym)
             E1:float = E10[2]
-            # 2 * C44
+            """ 2 * C44 """
             sym:str = "cub-xy"
             dfmat:float = np.array([[[1.,d,0.],[d,1.,0.],[0.,0.,1./(1.-d**2.)]] for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
@@ -238,42 +238,42 @@ class emod:
             print("*")
 
         elif ( brav == "tet" ):  # tetragonal
-            ### See "A. H. Reshak, M. Jamal, DFT Calculation for Elastic Constants of Tetragonal Strucrure of
-            ### Crystalline Solids with WIEN2k Code: A New Package (Tetra-elastic), Int. J. Electrochem. Sci., 8 (2013) 12252."
+            """ See A. H. Reshak, M. Jamal, DFT Calculation for Elastic Constants of Tetragonal Strucrure of
+                Crystalline Solids with WIEN2k Code: A New Package (Tetra-elastic), Int. J. Electrochem. Sci., 8 (2013) 12252. """
             print("*** Tetragonal system ***")
             print("* There are 6 independent elastic constants: ")
             print("* C11, C12, C13, C33, C44, C66")
-            # C11+C12
+            """ C11+C12 """
             sym:str = "tet_pl"
             dfmat:float = np.array([np.diag([1.+d,1.+d,1.]).tolist() for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
             E10:float = ccd.Emod_fit(self, para, sym)
             E1:float = E10[2]
-            # C11+C12+2*C33-4*C13
+            """ C11+C12+2*C33-4*C13 """
             sym:str = "tet_pl2"
             dfmat:float = np.array([np.diag([1.+d,1.+d,1./((1.+d)**2.)]).tolist() for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
             E20:float = ccd.Emod_fit(self, para, sym)
             E2:float = E20[2]
-            # 0.5*C33
+            """ 0.5*C33 """
             sym:str = "tet_ax"
             dfmat:float = np.array([np.diag([1.,1.,1.+d]).tolist() for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
             E30:float = ccd.Emod_fit(self, para, sym)
             E3:float = E30[2]
-            # C11-C12
+            """ C11-C12 """
             sym:str = "tet_ortho"
             dfmat:float = np.array([np.diag([np.sqrt((1.+d)/(1.-d)),np.sqrt((1.-d)/(1.+d)),1.]).tolist() for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
             E40:float = ccd.Emod_fit(self, para, sym)
             E4:float = E40[2]
-            # 4*C44
+            """ 4*C44 """
             sym:str = "tet_yz"
             dfmat:float = np.array([[[1.,0.,d],[0.,1.,d],[d,d,1.+d**2.]] for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
             E50:float = ccd.Emod_fit(self, para, sym)
             E5:float = E50[2]
-            # 2*C66
+            """ 2*C66 """
             sym:str = "tet_xy"
             dfmat:float = np.array([[[np.sqrt(1.+d**2.),d,0.],[d,np.sqrt(1.+d**2.),0.],[0.,0.,1.]] for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
@@ -312,36 +312,36 @@ class emod:
             print("*")
         
         elif ( brav == "hex" ):  # simple hexagonal
-            ### see for example, Z. Zhang, Z. H. Fu, R. F. Zhang, D. Legut, and H. B. Guo,
-            ### Anomalous mechanical strengths and shear deformation paths of Al2O3 polymorphs with high ionicity, RCS Advances
+            """ see for example, Z. Zhang, Z. H. Fu, R. F. Zhang, D. Legut, and H. B. Guo,
+                Anomalous mechanical strengths and shear deformation paths of Al2O3 polymorphs with high ionicity, RCS Advances """
             print("*** Hexagonal system ***")
             print("* There are 5 independent elastic constants: ")
             print("* C11, C12, C13, C33, C44")
-            # C11 + C12
+            """ C11 + C12 """
             sym:str = "hex-pl"
             dfmat:float = np.array([np.diag([1.+d,1.+d,1.]).tolist() for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
             E10:float = ccd.Emod_fit(self, para, sym)
             E1:float = E10[2]
-            # 0.25 * (C11 - C12)
+            """ 0.25 * (C11 - C12) """
             sym:str = "hex-xy"
             dfmat:float = np.array([[[1.,0.5*d,0.],[0.5*d,1.,0.],[0.,0.,1.]] for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
             E20:float = ccd.Emod_fit(self, para, sym)
             E2:float = E20[2]
-            # 0.5 * C33
+            """ 0.5 * C33 """
             sym:str = "hex-ax"
             dfmat:float = np.array([np.diag([1.,1.,1.+d]).tolist() for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
             E30:float = ccd.Emod_fit(self, para, sym)
             E3:float = E30[2]
-            # 0.5 * C44
+            """ 0.5 * C44 """
             sym:str = "hex-yz"
             dfmat:float = np.array([[[1.,0.,0.],[0.,1.,0.5*d],[0.,0.5*d,1.]] for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
             E40:float = ccd.Emod_fit(self, para, sym)
             E4:float = E40[2]
-            # C11 + C12 + 2.*C13 + 0.5*C33
+            """ C11 + C12 + 2.*C13 + 0.5*C33 """
             sym:str = "hex-all"
             dfmat:float = np.array([np.diag([1.+d,1.+d,1.+d]).tolist() for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
@@ -381,49 +381,49 @@ class emod:
             print("*** Monoclinic system ***")
             print("* There are 8 independent elastic constants: ")
             print("* C11, C22, C33, C44, C55, C66, C12, C13")
-            # 0.5 * C11
+            """ 0.5 * C11 """
             sym:str = "mono-unix"
             dfmat:float = np.array([np.diag([1.+d,1.,1.]).tolist() for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
             E10:float = ccd.Emod_fit(self, para, sym)
             E1:float = E10[2]
-            # 0.5 * C22
+            """ 0.5 * C22 """
             sym:str = "mono-uniy"
             dfmat:float = np.array([np.diag([1.,1.+d,1.]).tolist() for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
             E20:float = ccd.Emod_fit(self, para, sym)
             E2:float = E20[2]
-            # 0.5 * C33
+            """ 0.5 * C33 """
             sym:str = "mono-uniz"
             dfmat:float = np.array([np.diag([1.,1.,1.+d]).tolist() for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
             E30:float = ccd.Emod_fit(self, para, sym)
             E3:float = E30[2]
-            # 0.5 * C44
+            """ 0.5 * C44 """
             sym:str = "mono-yz"
             dfmat:float = np.array([[[1.,0.,0.],[0.,1.,0.5*d],[0.,0.5*d,1.]] for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
             E40:float = ccd.Emod_fit(self, para, sym)
             E4:float = E40[2]
-            # 0.5 * C55
+            """ 0.5 * C55 """
             sym:str = "mono-zx"
             dfmat:float = np.array([[[1.,0.,0.5*d],[0.,1.,0.],[0.5*d,0.,1.]] for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
             E50:float = ccd.Emod_fit(self, para, sym)
             E5:float = E50[2]
-            # 0.5 * C66
+            """ 0.5 * C66 """
             sym:str = "mono-xy"
             dfmat:float = np.array([[[1.,0.5*d,0.],[0.5*d,1.,0.],[0.,0.,1.]] for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
             E60:float = ccd.Emod_fit(self, para, sym)
             E6:float = E60[2]
-            # 0.5*C11 + C12 + 0.5*C22
+            """ 0.5*C11 + C12 + 0.5*C22 """
             sym:str = "mono-plxy"
             dfmat:float = np.array([np.diag([1.+d,1.+d,1.]).tolist() for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
             E70:float = ccd.Emod_fit(self, para, sym)
             E7:float = E70[2]
-            # 0.5*C11 + C13 + 0.5*C33
+            """ 0.5*C11 + C13 + 0.5*C33 """
             sym:str = "mono-plzx"
             dfmat:float = np.array([np.diag([1.+d,1.,1.+d]).tolist() for d in ep])
             ccd.calc_Emod(self, ep, dfmat, sym)
@@ -458,8 +458,8 @@ class emod:
     def calc_Debye_temp(self):
         """ calculate Debye temperature """
         
-        ### See "H. Alipour, A. Hamedani, & G. Alahyarizadeh, First-principles calculations to investigate the thermal response
-        ### of the ZrC(1-x)Nx ceramics at extreme conditions, High Temp. Mater. Proc. 42 (2023) 20220241."
+        """ See H. Alipour, A. Hamedani, & G. Alahyarizadeh, First-principles calculations to investigate the thermal response
+                of the ZrC(1-x)Nx ceramics at extreme conditions, High Temp. Mater. Proc. 42 (2023) 20220241. """
         (alat, plat, elements, nelems, natm, pos, Vol) = prms.get_POSCAR("POSCAR0")
         Mass_ele:float = [prms.ELEMS_MASS[ele] for ele in elements]
         Mass:float = sum([Mass_ele[i] for i, ne in enumerate(nelems) for j in range(ne)])

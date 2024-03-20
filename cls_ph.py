@@ -1,5 +1,5 @@
-### See "A. Alkauskas, B. B. Buckley, D. D. Awschalom, & C. G. Van de Walle,
-###      First-principels theory of the luminescence lineshape for the triplet transition in diamond NV centres, New J. Phys. 16 (2014) 073026."
+""" See A. Alkauskas, B. B. Buckley, D. D. Awschalom, & C. G. Van de Walle,
+        First-principels theory of the luminescence lineshape for the triplet transition in diamond NV centres, New J. Phys. 16 (2014) 073026. """
 import numpy as np
 import matplotlib.pyplot as plt
 import subprocess as sub
@@ -39,7 +39,7 @@ class ph:
                 sub.run(["mkdir {ncsc}".format(ncsc=ncsc)], shell=True)
                 os.chdir(ncsc)
                 sub.run(["cat ../header.in ../{fi} >| {mat}-{ncsc}.scf.in".format(fi=fi, mat=prms.mat, ncsc=ncsc)], shell=True)
-                # run scf calculation
+                """ run scf calculation """
                 sub.run(["mpirun -np {nc} {exe}/pw.x < {mat}-{ncsc}.scf.in > {mat}-{ncsc}.scf.out".format(nc=prms.nc, exe=prms.exe, mat=prms.mat, ncsc=ncsc)], shell=True)
                 sub.run(["rm work/{mat}.save/wfc*".format(mat=prms.mat)], shell=True)
                 force_command += "{ncsc}/{mat}-{ncsc}.scf.out ".format(mat=prms.mat, ncsc=ncsc)
