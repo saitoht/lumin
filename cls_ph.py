@@ -11,18 +11,15 @@ class ph:
     ### ----------------------------------------------------------------------------- ###
     def __init__(self):
         """ Constructor of ph """
-        
-        const = subs.subs()
-        prms = subs.get_prms()
 
-    ### ----------------------------------------------------------------------------- ###
-    def run_phonon(self):
-        """ execute phonon calculations """
-        
+        prms = subs.subs()        
+        print("* --- Class Phonon --- *")
         if ( prms.sw_phrun ):
-            phonon()
+            ph.phonon(self)
         if ( not prms.sw_HR == "none" ):
-            Huang_Rhys()
+            ph.Huang_Rhys(self)
+        print("* --- Finish Class Phonon --- *")
+        print("*")
 
     ### ----------------------------------------------------------------------------- ###
     def phonon(self):
@@ -67,7 +64,6 @@ class ph:
             sub.run(["conda activate phonopy"], shell=True)
             sub.run(["phonopy --qpoints='0 0 0' --writedm"], shell=True)
         data = yaml.load(open("qpoints.yaml","r"),Loader=yaml.Loader)
-        self.dynmat:complex = []
         dynmat_data = data['phonon'][0]['dynamical_matrix']
         for row in dynmat_data:
             vals = np.reshape(row, (-1,2))
@@ -76,32 +72,32 @@ class ph:
         self.eigvals, self.eigvecs = np.linalg.eigh(self.dynmat)
         self.eigvecs = np.reshape(self.eigvecs, (3,len(self.eigvecs[0])//3,len(self.eigvecs)))
         self.freq:float = np.sqrt(np.abs(self.eigvals.real)) * np.sign(self.eigvals.real)
-        self.freq = self.freq * const.conversion_factor_to_THz * const.THz2eV
+        self.freq = self.freq * prms.conversion_factor_to_THz * prms.THz2eV
 
         self.nmode:int = len(self.freq)
         self.qk:float = np.zeros(self.nmode)
         self.qk_force:float = np.zeros(self.nmode)
-        (alat, plat, elements, nelems, natm, Rpos_g, volume) = subs.get_POSCAR("POSCAR_"+prms.stateg)
-        (alat, plat, elements, nelems, natm, Rpos_e, volume) = subs.get_POSCAR("POSCAR_"+prms.statee)
+        (alat, plat, elements, nelems, natm, Rpos_g, volume) = prms.get_POSCAR("POSCAR_"+prms.stateg)
+        (alat, plat, elements, nelems, natm, Rpos_e, volume) = prms.get_POSCAR("POSCAR_"+prms.statee)
         mass:float = []
         for i, nel in enumerate(nelems):
             for j in range(nel):
-                mass.append(const.ELEMS_MASS[elements[i]]*const.uatm/const.me)
+                mass.append(prms.ELEMS_MASS[elements[i]]*prms.uatm/prms.me)
         if ( sw_qk in {"force","both"} ):
-            Force_g:float = subs.get_FORCE("FORCE_"+prms.stateg)
-            Force_e:float = subs.get_FORCE("FORCE_"+prms.statee)
+            Force_g:float = prms.get_FORCE("FORCE_"+prms.stateg)
+            Force_e:float = prms.get_FORCE("FORCE_"+prms.statee)
         
         for i in range(natm):
             for j in range(3):
                 if ( prms.sw_qk in {"pos","both"} ):
-                    self.qk[:] += np.sqrt(mass[i]) * (Rpos_e[i,j]-Rpos_g[i,j]) * self.eigvecs[j,i,:].real / const.Bohr
+                    self.qk[:] += np.sqrt(mass[i]) * (Rpos_e[i,j]-Rpos_g[i,j]) * self.eigvecs[j,i,:].real / prms.Bohr
                 if ( prms.sw_qk in {"force","both"} ):
-                    self.qk_force[:] += (1./((self.freq[:]/const.Ry)**2.)*np.sqrt(mass[i])) * (Force_e[i,j]-Force_g[i,j]) * self.eigvecs[j,i,:].real
+                    self.qk_force[:] += (1./((self.freq[:]/prms.Ry)**2.)*np.sqrt(mass[i])) * (Force_e[i,j]-Force_g[i,j]) * self.eigvecs[j,i,:].real
         self.Sk:float = np.zeros(self.nmode)
         self.Sk_force:float = np.zeros(self.nmode)
         for i in range(self.nmode):
-            self.Sk[i]:float = self.freq[i] * self.qk[i]**2. / ( 2.*const.Ry )
-            self.Sk_force[i]:float = self.freq[i] * self.qk_force[i]**2. / ( 2.*const.Ry )
+            self.Sk[i]:float = self.freq[i] * self.qk[i]**2. / ( 2.*prms.Ry )
+            self.Sk_force[i]:float = self.freq[i] * self.qk_force[i]**2. / ( 2.*prms.Ry )
         energy:float = np.linspace(prms.emin_ph, prms.emax_ph, prms.ndiv_ph)
         self.Sspec:float = np.zeros(prms.ndiv_ph)
         self.Sspec_force:float = np.zeros(prms.ndiv_ph)
@@ -109,10 +105,10 @@ class ph:
         self.Stot_force:float = 0.0
         for i in range(self.nmode):
             if ( prms.sw_qk in {"pos","both"} ):
-                self.Sspec[:] += self.Sk[i] * subs.Gaussian(energy[:]-self.freq[i])
+                self.Sspec[:] += self.Sk[i] * prms.Gaussian(energy[:]-self.freq[i])
                 self.Stot += self.Sk[i]
             if ( prms.sw_qk in {"force","both"} ):
-                self.Sspec_force[:] += self.Sk_force[i] * subs.Gaussian(energy[:]-self.freq[i])
+                self.Sspec_force[:] += self.Sk_force[i] * prms.Gaussian(energy[:]-self.freq[i])
                 self.Stot_force += self.Sk_force[i]
         print("* Stot from position: ", self.Stot)
         print("* Stot from force: ", self.Stot_force)

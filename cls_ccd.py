@@ -12,30 +12,24 @@ class ccd:
     def __init__(self):
         """ Constructor of configuration coordinate model """
         
-        const = subs.subs()
-        prms = subs.get_prms()
-
-    ### ----------------------------------------------------------------------------- ###
-    def run_ccd(self):
-        """ execute ccd calculation program """
-    
+        prms = subs.subs()
         print("* --- Start calculation of configuration coordinate model--- *")
         if ( prms.sw_unit in {"eV","nm"} ):
             unit:float = 1.0
         elif ( prms.sw_unit == "cm^-1" ):
-            unit:float = const.eV2cm
-        get_Stokes()
-        get_DeltaQ()
+            unit:float = prms.eV2cm
+        ccd.get_Stokes(self)
+        ccd.get_DeltaQ(self)
         if ( sw_eg ):
-            calc_Eeg(prms.stateg)
-            calc_Eeg(prms.statee)
-            (Qming_3dim,Omegag,Sem,Qming_2dim,Omegag_2dim,Sem_2dim) = fit_Ecurve(prms.stateg,prms.EFCg)
-            (Qmine_3dim,Omegae,Sabs,Qmine_dim,Omegae_2dim,Sabs_2dim) = fit_Ecurve(prms.statee,self.EFCe)
-        calc_Line_shape()
-        calc_Ecenter_shift()
-        calc_FWHM()
+            ccd.calc_Eeg(self,prms.stateg)
+            ccd.calc_Eeg(self,prms.statee)
+            (Qming_3dim,Omegag,Sem,Qming_2dim,Omegag_2dim,Sem_2dim) = ccd.fit_Ecurve(self,prms.stateg,prms.EFCg)
+            (Qmine_3dim,Omegae,Sabs,Qmine_dim,Omegae_2dim,Sabs_2dim) = ccd.fit_Ecurve(self,prms.statee,self.EFCe)
+        ccd.calc_Line_shape(self)
+        ccd.calc_Ecenter_shift(self)
+        ccd.calc_FWHM(self)
 
-        print("* check the parameters in ccd *")
+        print("*** check the parameters in ccd ***")
         if ( prms.sw_unit in {"eV","cm^-1"} ):
             print("* Absorption energy ({sunit}): ".format(sunit=prms.sw_unit), prms.Eabs0*unit)
             print("* Emission energy ({sunit}): ".format(sunit=prms.sw_unit), prms.Eem0*unit)
@@ -50,18 +44,18 @@ class ccd:
             print("* hbar*Omegag ({sunit}): ".format(sunit=prms.sw_unit), self.Omegag*unit)
             print("* hbar*Omegae ({sunit}): ".format(sunit=prms.sw_unit), self.Omegae*unit)
         elif ( prms.sw_unit == "nm" ):
-            print("* Absorption energy (nm): ", subs.E2lambda(prms.Eabs0))
-            print("* Emission energy (nm): ", subs.E2lambda(prms.Eem0))
-            print("* EFCg = Ee - Eg (nm): ", subs.E2lambda(prms.EFCg))
-            print("* EFCe = Eg* - Ee* (nm): ", subs.E2lambda(self.EFCe))
-            print("* Stokes shift (@ 0K) (nm): ", subs.E2lambda(self.deltaS))
-            print("* Zero phonon photoemission line (nm): ", subs.E2lambda(self.EZPL))
-            print("* FWHM (@ 0K) (nm): ", subs.E2lambda(self.W0))
+            print("* Absorption energy (nm): ", prms.E2lambda(prms.Eabs0))
+            print("* Emission energy (nm): ", prms.E2lambda(prms.Eem0))
+            print("* EFCg = Ee - Eg (nm): ", prms.E2lambda(prms.EFCg))
+            print("* EFCe = Eg* - Ee* (nm): ", prms.E2lambda(self.EFCe))
+            print("* Stokes shift (@ 0K) (nm): ", prms.E2lambda(self.deltaS))
+            print("* Zero phonon photoemission line (nm): ", prms.E2lambda(self.EZPL))
+            print("* FWHM (@ 0K) (nm): ", prms.E2lambda(self.W0))
             print("* DeltaR (ang): ", self.deltaR)
             print("* DeltaQ (sqrt(amu)*ang): ", self.deltaQ)
             print("* DeltaQ[1:3]: ", self.dQvec)
-            print("* hbar*Omegag (nm): ", subs.E2lambda(self.Omegag))
-            print("* hbar*Omegae (nm): ", subs.E2lambda(self.Omegae))
+            print("* hbar*Omegag (nm): ", prms.E2lambda(self.Omegag))
+            print("* hbar*Omegae (nm): ", prms.E2lambda(self.Omegae))
         else:
             print("* ERROR: sw_unit should be 'eV', 'nm', or 'cm^-1'!!!")
             sys.exit()
@@ -70,7 +64,7 @@ class ccd:
         print("*")
     
         if ( prms.sw_plt_ccd ):
-            plt_ccd()
+            ccd.plt_ccd(self)
         else:
             print("* --- NO PLOT --- *")
         print("* --- FINISH CALCULATIONS OF STOKES SHIFT--- *")
@@ -110,8 +104,8 @@ class ccd:
             plt.scatter(prms.Eem0*unit,0.0,c="red",s=size,marker="o")
         elif ( prms.sw_unit == "nm" ):
             plt.xlabel("Wave length (nm)")
-            plt.plot(subs.E2lambda(energy), self.Labs, lw=1.0, c="black")
-            plt.plot(subs.E2lambda(energy), self.Lem, lw=1.0, c="red")
+            plt.plot(prms.E2lambda(energy), self.Labs, lw=1.0, c="black")
+            plt.plot(prms.E2lambda(energy), self.Lem, lw=1.0, c="red")
             plt.savefig("Spectrum.pdf")
             plt.show()
                 
@@ -122,8 +116,8 @@ class ccd:
             plt.plot(self.temp, unit*self.Eabs, lw=1.0, c="black")
             plt.plot(self.temp, unit*self.Eem, lw=1.0, c="red")
         elif ( prms.sw_unit == "nm" ):
-            plt.plot(self.temp, subs.E2lambda(self.Eabs), lw=1.0, c="black")
-            plt.plot(self.temp, subs.E2lambda(self.Eem), lw=1.0, c="red")
+            plt.plot(self.temp, prms.E2lambda(self.Eabs), lw=1.0, c="black")
+            plt.plot(self.temp, prms.E2lambda(self.Eem), lw=1.0, c="red")
             plt.savefig("Epeak_Temp.pdf")
             plt.show()
                 
@@ -133,7 +127,7 @@ class ccd:
         if ( prms.sw_unit in {"eV","cm^-1"} ):
             plt.plot(self.temp, unit*(self.Eabs-self.Eem), lw=1.0, c="black")
         elif ( prms.sw_unit == "nm" ):
-            plt.plot(self.temp, subs.E2lambda(self.Eabs)-subs.E2lambda(self.Eem), lw=1.0, c="black")
+            plt.plot(self.temp, prms.E2lambda(self.Eabs)-prms.E2lambda(self.Eem), lw=1.0, c="black")
             plt.savefig("Stokes_Temp.pdf")
             plt.show()
                 
@@ -149,8 +143,8 @@ class ccd:
         """ calculate total enegies of intermediate states """
         
         print("* --- gernerate POSCAR in between ground & excited states --- *")
-        (alat_g,plat_g,elements_g,nelems_g,natm_g,pos_g) = get_POSCAR("POSCAR_"+prms.stateg)
-        (alat_e,plat_e,elements_e,nelems_e,natm_e,pos_e) = get_POSCAR("POSCAR_"+prms.statee)
+        (alat_g,plat_g,elements_g,nelems_g,natm_g,pos_g) = prms.get_POSCAR("POSCAR_"+prms.stateg)
+        (alat_e,plat_e,elements_e,nelems_e,natm_e,pos_e) = prms.get_POSCAR("POSCAR_"+prms.statee)
         Qarr:float = np.linspace(-prms.dQ, 1.+prms.dQ, prms.ndiv_eg)
         for i, Q in enumerate(Qarr):
             Rmid:float = np.zeros((len(pos_g),3))
@@ -179,7 +173,7 @@ class ccd:
                 sub.run(["mkdir -p {ndir}/{state}".format(ndir=ndir, state=state)], shell=True)
                 os.chdir("{ndir}/{state}".format(ndir=ndir, state=state))
                 sub.run(["cp ../../header_{state}.in {mat}-eg{ic}.scf.in".format(state=state, mat=prms.mat, ic=i+1)], shell=True)
-                (alat, plat, elements, nelems, natm, pos) = subs.get_POSCAR("../../POSCAR_eg{ic}".format(ic=i+1))
+                (alat, plat, elements, nelems, natm, pos) = prms.get_POSCAR("../../POSCAR_eg{ic}".format(ic=i+1))
                 ic: int = 0
                 string: str = ""
                 for j, nele in enumerate(nelems):
@@ -188,7 +182,7 @@ class ccd:
                         ic += 1
                 with open("{mat}-eg{ic}.scf.in".format(mat=prms.mat,ic=i+1),"a") as f:
                     f.write(string)
-                # run scf calculation
+                """ run scf calculation """
                 sub.run(["mpirun -np {nc} {exe}/pw.x < {mat}-eg{ic}.scf.in > {mat}-eg{ic}.scf.out".format(nc=prms.nc, exe=prms.exe, ic=i+1, mat=prms.mat)], shell=True)
                 sub.run(["rm work/{mat}.save/wfc*".format(mat=prms.mat)], shell=True)
                 sub.run(["grep ! {mat}-eg{ic}.scf.out > grep.out".format(mat=prms.mat, ic=i+1)], shell=True)
@@ -207,13 +201,13 @@ class ccd:
         Q, Etot = np.loadtxt(fn,dtype='float',unpack=True,ndmin=0)
         x:float = np.linspace(-0.1+Q[0],0.1+Q[len(Q)-1],1000)
         weight:float = np.ones(len(Q))
-        coef_3dim:float = np.polyfit(Q, (Etot-min(Etot))*const.Ry, 3, w=weight)
+        coef_3dim:float = np.polyfit(Q, (Etot-min(Etot))*prms.Ry, 3, w=weight)
         Efit_3dim:float = np.poly1d(coef_3dim)(x)
-        coef_2dim:float = np.polyfit(Q, (Etot-min(Etot))*const.Ry, 2, w=weight)
+        coef_2dim:float = np.polyfit(Q, (Etot-min(Etot))*prms.Ry, 2, w=weight)
         Efit_2dim:float = np.poly1d(coef_2dim)(x)
 
-        # consider Anharmonic effects
-        cfunit:float = const.hbar*1.e10*np.sqrt(1./(const.ep*const.uatm))
+        """ consider Anharmonic effects """
+        cfunit:float = prms.hbar*1.e10*np.sqrt(1./(prms.ep*prms.uatm))
         Qmin_3dim:float = (-coef_3dim[1]+np.sqrt(coef_3dim[1]**2.-3.*coef_3dim[0]*coef_3dim[2]))/(3.*coef_3dim[0])
         Omega_3dim:float = cfunit*np.sqrt(6.*coef_3dim[0]*Qmin_3dim+2.*coef_3dim[1])
         S_3dim:float = EFC / Omega_3dim
@@ -224,7 +218,7 @@ class ccd:
         print("* hbar*Omega (eV) @ Q=Qmin: {cubic}".format(cubic=Omega_3dim))
         print("*")
     
-        # Harmonic approximation
+        """ Harmonic approximation """
         Omega_2dim:float = cfunit*np.sqrt(2.*coef_2dim[0])
         Qmin_2dim:float = - coef_2dim[1] / (2.*coef_2dim[0])
         S_2dim:float = EFC / Omega_2dim
@@ -235,7 +229,7 @@ class ccd:
     
         plt.xlabel(r"Q ($\sqrt{\mathrm{amu}} \cdot \AA$)")
         plt.ylabel("Energy (eV)")
-        plt.scatter(Q,(Etot-min(Etot))*const.Ry,marker="o",label="data",edgecolor="darkred",color="white",s=30)
+        plt.scatter(Q,(Etot-min(Etot))*prms.Ry,marker="o",label="data",edgecolor="darkred",color="white",s=30)
         plt.plot(x,Efit_2dim,linestyle="dashed",color="mediumblue",label="fit 2dim")
         plt.scatter(Qmin_2dim, np.poly1d(coef_2dim)(Qmin_2dim), marker="*", color="darkblue", s=60)
         plt.plot(x,Efit_3dim,linestyle="dashed",color="coral",label="fit 3dim")
@@ -250,9 +244,9 @@ class ccd:
     def get_Stokes(self):
         """ Stokes shift, Franck-Condon parameter, and zero-phonon energy """
         
-        self.deltaS: float = prms.Eabs0 - prms.Eem0
-        self.EFCe: float = self.deltaS - prms.EFCg
-        self.EZPL: float = prms.Eem0 + prms.EFCg
+        self.deltaS:float = prms.Eabs0 - prms.Eem0
+        self.EFCe:float = self.deltaS - prms.EFCg
+        self.EZPL:float = prms.Eem0 + prms.EFCg
 
     ### ----------------------------------------------------------------------------- ###
     def get_DeltaQ(self):
@@ -261,20 +255,20 @@ class ccd:
         pg = pathlib.Path("POSCAR_"+prms.stateg)
         pe = pathlib.Path("POSCAR_"+prms.statee)
         if ( not pg.exists() ):
-            print("*** ERROR in opt.get_DeltaQ: POSCAR_g doesn't exist!!!")
+            print("*** ERROR in ccd.get_DeltaQ: POSCAR_g doesn't exist!!!")
             sys.exit()
         if ( not pe.exists() ):
-            print("*** ERROR in opt.get_DeltaQ: POSCAR_e doesn't exist!!!")
+            print("*** ERROR in ccd.get_DeltaQ: POSCAR_e doesn't exist!!!")
             sys.exit()
-        (alat_g, plat_g, elements_g, nelems_g, natm_g, pos_g, volume) = subs.get_POSCAR("POSCAR_"+prms.stateg)
-        (alat_e, plat_e, elements_e, nelems_e, natm_e, pos_e, volume) = subs.get_POSCAR("POSCAR_"+prms.statee)
+        (alat_g, plat_g, elements_g, nelems_g, natm_g, pos_g, volume) = prms.get_POSCAR("POSCAR_"+prms.stateg)
+        (alat_e, plat_e, elements_e, nelems_e, natm_e, pos_e, volume) = prms.get_POSCAR("POSCAR_"+prms.statee)
         if ( not abs(alat_g - alat_e) < 1.0e-5 ):
-            print("*** ERROR in opt.get_DeltaQ: different alat between the grond state and the excited state!!!")
+            print("*** ERROR in ccd.get_DeltaQ: different alat between the grond state and the excited state!!!")
             sys.exit()
             
-        mass:float = [const.ELEMS_MASS[ele]*const.uatm/const.me for ele in elements_g]
-        alat_g = alat_g / const.Bohr
-        alat_e = alat_e / const.Bohr
+        mass:float = [prms.ELEMS_MASS[ele]*prms.uatm/prms.me for ele in elements_g]
+        alat_g = alat_g / prms.Bohr
+        alat_e = alat_e / prms.Bohr
         pos_g = alat_g * np.dot( pos_g, plat_g )
         pos_e = alat_e * np.dot( pos_e, plat_e )
         deltaQ_sq:float = 0.0
@@ -287,12 +281,12 @@ class ccd:
                 deltaR_sq += sum([(pos_e[count,k]-pos_g[count,k])**2. for k in range(3)])
                 dQvec_sq[:] += mass[i] * (pos_e[count,:]-pos_g[count,:])**2.
                 count += 1
-        self.deltaQ:float = np.sqrt(const.me/const.uatm)*const.Bohr * np.sqrt(deltaQ_sq)
-        self.dQvec:float = np.sqrt(const.me/const.uatm)*const.Bohr * np.array([np.sqrt(dQvec_sq[i]) for i in range(3)])
-        self.deltaR:float = const.Bohr * np.sqrt(deltaR_sq)
+        self.deltaQ:float = np.sqrt(prms.me/prms.uatm)*prms.Bohr * np.sqrt(deltaQ_sq)
+        self.dQvec:float = np.sqrt(prms.me/prms.uatm)*prms.Bohr * np.array([np.sqrt(dQvec_sq[i]) for i in range(3)])
+        self.deltaR:float = prms.Bohr * np.sqrt(deltaR_sq)
         self.M:float = deltaQ_sq / deltaR_sq
 
-        cfunit:float = const.hbar*1.e10*np.sqrt(1./(const.ep*const.uatm))
+        cfunit:float = prms.hbar*1.e10*np.sqrt(1./(prms.ep*prms.uatm))
         self.Omegag:float = cfunit * np.sqrt(2. * prms.EFCg / (self.deltaQ**2.)) 
         self.Omegae:float = cfunit * np.sqrt(2. * self.EFCe / (self.deltaQ**2.)) 
         self.Sabs:float = self.EFCe / self.Omegae
@@ -305,13 +299,13 @@ class ccd:
         if ( prms.sw_unit in {"eV","nm"} ):
             self.energy:float = np.linspace(prms.emin_ccd, prms.emax_ccd, prms.ndiv_e)
         else:
-            self.energy:float = np.linspace(subs.E2lambda(prms.emax_ccd),subs.E2lambda(prms.emin_ccd),prms.ndiv_e)
-            self.energy = subs.lambda2E(self.energy)
+            self.energy:float = np.linspace(prms.E2lambda(prms.emax_ccd),prms.E2lambda(prms.emin_ccd),prms.ndiv_e)
+            self.energy = prms.lambda2E(self.energy)
         self.Lem:float = np.zeros(prms.ndiv_e)
         self.Labs:float = np.zeros(prms.ndiv_e)
         for n in range(prms.nmax):
-            self.Lem[:] += ( np.exp(-self.Sem)*self.Sem**float(n) / float(np.math.factorial(n)) ) * subs.Lorentzian(self.EZPL - float(n)*self.Omegag - self.energy[:])
-            self.Labs[:] += ( np.exp(-self.Sabs)*self.Sabs**float(n) / float(np.math.factorial(n)) ) * subs.Lorentzian(self.EZPL + float(n)*self.Omegae - self.energy[:])
+            self.Lem[:] += ( np.exp(-self.Sem)*self.Sem**float(n) / float(np.math.factorial(n)) ) * prms.Lorentzian(self.EZPL - float(n)*self.Omegag - self.energy[:])
+            self.Labs[:] += ( np.exp(-self.Sabs)*self.Sabs**float(n) / float(np.math.factorial(n)) ) * prms.Lorentzian(self.EZPL + float(n)*self.Omegae - self.energy[:])
         self.Lem = self.I0 * self.Lem / max(self.Lem)
         self.Labs = self.I0 * self.Labs / max(self.Labs)
 
@@ -319,13 +313,10 @@ class ccd:
     def calc_Ecenter_shift(self)
         """ Eem shift and Eabs shift as a function of temperature """
         
-        ### revise to prms.tempmin in the future
-        self.tempmin:float = 1.
-        self.tempmax:float = 1.e3
-        self.temp:float = np.linspace(self.tempmin, self.tempmax, prms.ndiv_temp)
-        self.Eabs:float = prms.Eabs0 + ((self.Omegae**2. - self.Omegag**2.)/(self.Omegag**2.)) * const.kB*self.temp
+        self.temp:float = np.linspace(prms.tempmin, prms.tempmax, prms.ndiv_temp)
+        self.Eabs:float = prms.Eabs0 + ((self.Omegae**2. - self.Omegag**2.)/(self.Omegag**2.)) * prms.kB*self.temp
         self.Eem:float = prms.Eem0 + ((self.Omegag**2. - self.Omegae**2.)/(self.Omegae**2.) +
-                                       (8.*(self.Omegag**4.)*self.deltaS)/(self.Omegae**2.*(self.Omegag**2.+self.Omegae**2.)*prms.Eem0)) * const.kB*self.temp
+                                       (8.*(self.Omegag**4.)*self.deltaS)/(self.Omegae**2.*(self.Omegag**2.+self.Omegae**2.)*prms.Eem0)) * prms.kB*self.temp
 
     ### ----------------------------------------------------------------------------- ###
     def calc_FWHM(self):
@@ -336,5 +327,5 @@ class ccd:
         if ( prms.sw_unit == "nm" ):
             W0min:float = prms.Eem0 - 0.5*self.W0
             W0max:float = prms.Eem0 + 0.5*self.W0
-            self.W0 = subs.E2lambda(W0min) - subs.E2lambda(W0max)
-        self.W:float = self.W0 * np.sqrt( 1. / np.tanh(self.Omegae/(2.*const.kB*self.temp)) )
+            self.W0 = prms.E2lambda(W0min) - prms.E2lambda(W0max)
+        self.W:float = self.W0 * np.sqrt( 1. / np.tanh(self.Omegae/(2.*prms.kB*self.temp)) )

@@ -9,7 +9,7 @@ class subs:
     def __init__(self):
         """ Constructor: initialize parameters"""
         
-        # Physical constatns
+        """ Physical constatns """
         self.Bohr:float = 0.529177210903        # \AA
         self.Ry:float = 13.6057039763           # eV
         self.uatm:float = 1.66054e-27           # kg
@@ -25,7 +25,7 @@ class subs:
         self.fc2THz:float = 15.633302           # factor to convert into THz
         self.fceV2nm:float = 1239.8             # factor to convert eV into nm
         
-        # element mass
+        """ element mass """
         self.ELEMS_MASS = {"H":  1.00798, "He": 4.0026,  "Li": 6.968,   "Be": 9.01218, "B":  10.814,
                            "C":  12.0106, "N":  14.0069, "O":  15.9994, "F":  18.9984, "Ne": 20.1797,
                            "Na": 22.9898, "Mg": 24.306,  "Al": 26.9815, "Si": 28.085,  "P":  30.9738,
@@ -51,22 +51,17 @@ class subs:
                            "Rg": 280.,    "Cn": 285.,    "Nh": 278.,    "Fl": 289.,    "Mc": 289.,
                            "Lv": 293.,    "Ts": 293.,    "Og": 194.}
 
-    ### ----------------------------------------------------------------------------- ###
-    def get_prms(self):
-        """ get parameters for calculations """
-        
-        print("*** Start reading LUMIN ***")
-        ### default values
-        # for system
+        """ default values """
+        """ for system """
         self.mat:int = ""
         self.nc:int = 20
         self.exe:int = "$HOME/qe/bin"
-        # for emod
+        """ for emod """
         self.brav:str = "cub"
         self.sw_plt_emod:bool = False
         self.dratio:float = 0.02
         self.ndiv_emod:int = 15
-        # for ccd
+        """ for ccd """
         self.gamma:float = 1.e-5
         self.Eabs0:float = 2.146
         self.Eem0:float = 1.702
@@ -79,12 +74,14 @@ class subs:
         self.statee:str = "4T2g"
         self.emin_ccd:float = 1.0
         self.emax_ccd:float = 3.0
+        self.tempmin:float = 1.0
+        self.tempmax:float = 1.0e3
         self.I0:float = 1.0
         self.nmax:int = 30
         self.ndiv_e:int = 1000000
         self.ndiv_temp:int = 1000
         self.ndiv_eg:int = 12
-        # for ph
+        """ for ph """
         self.ndim:int = [1,1,1]
         self.sw_HP:str = "none"
         self.sw_phrun:bool = False
@@ -93,13 +90,26 @@ class subs:
         self.ndiv_ph:int = 1000000
         self.emin_ph:float = 0.0
         self.emax_ph:float = 1.0
+        """ switch for execution """
+        self.sw_run_emod:bool = False
+        self.sw_run_ccd:bool = False
+        self.sw_run_ph:bool = False
         
+        """ get parameters """
+        subs.get_prms(self)
+        
+    ### ----------------------------------------------------------------------------- ###
+    def get_prms(self):
+        """ get parameters for calculations """
+        
+        print("* --- subs.get_prms --- *")
         sw_sys:bool = False
         sw_emod:bool = False
         sw_ph:bool = False
         sw_ccd:bool = False
         p = pathlib.Path("LUMIN")
         if ( p.exists() ):
+            print("*** Start reading LUMIN ***")
             with open("LUMIN","r") as f:
                 inputs:str = f.readlines()
             for ip in inputs:
@@ -135,7 +145,7 @@ class subs:
                 else:
                     pass
                 
-                # system
+                """ system """
                 if ( sw_sys and line[0][0:4] == "mat=" ):
                     if ( len(line) == 2 ):
                         self.mat:str = line[1]
@@ -157,7 +167,7 @@ class subs:
                 else:
                     pass
 
-                # elastic moduli
+                """ elastic moduli """
                 if ( sw_emod and line[0][0:5] == "brav=" ):
                     if ( len(line) == 2 ):
                         self.brav:str = line[1]
@@ -185,7 +195,7 @@ class subs:
                 else:
                     pass
 
-                # configuration coordinate diagram
+                """ configuration coordinate diagram """
                 if ( sw_ccd and line[0][0:6] == "Eabs0=" ):
                     if ( len(line) == 2 ):
                         self.Eabs0:float = float(line[1])
@@ -264,6 +274,18 @@ class subs:
                     else:
                         self.emax_ccd:float = float(line[0].replace("emax_ccd=",""))
                     print("* emax_ccd (eV): ", self.emax_ccd)
+                elif ( sw_ccd and line[0][0:8] == "tempmin=" ):
+                    if ( len(line) == 2 ):
+                        self.tempmin:float = float(line[1])
+                    else:
+                        self.tempmin:float = float(line[0].replace("tempmin=",""))
+                    print("* tempmin (K): ", self.tempmin)
+                elif ( sw_ccd and line[0][0:8] == "tempmax=" ):
+                    if ( len(line) == 2 ):
+                        self.tempmax:float = float(line[1])
+                    else:
+                        self.tempmax:float = float(line[0].replace("tempmax=",""))
+                    print("* tempmax (K): ", self.tempmax)
                 elif ( sw_ccd and line[0][0:5] == "nmax=" ):
                     if ( len(line) == 2 ):
                         self.nmax:int = int(line[1])
@@ -291,7 +313,7 @@ class subs:
                 else:
                     pass
             
-                # phonon
+                """ phonon """
                 if ( sw_ph and line[0][0:5] == "ndim=" ):
                     if ( len(line) == 4 ):
                         self.ndim:int = [int(l) for l in line[1:4]]
@@ -342,7 +364,7 @@ class subs:
             pass
 
         args:str = sys.argv
-        if ( (len(args) == 1 and mat == "") or "-h" in args ):
+        if ( (len(args) == 1 and self.mat == "") or "-h" in args ):
             helpmessage: str = """ *** USAGE: python lumin.py {mat} [-h] [-nc {nc}] [-exe {exe}] [-p] [-emod] [-ccd] [-ph]
                                 -h : print helpmessage
                                 -nc {nc} : number of cpu {20}
@@ -365,6 +387,8 @@ class subs:
                                 -unit {sw_unit} : select unit of quantities (eV, cm^-1, nm) {eV}
                                 -emin_ccd {emin_ccd} : energy min. for plotting
                                 -emax_ccd {emax_ccd} : energy max. for plotting
+                                -tempmin {tempmin} : temperature min.
+                                -tempmax {tempmax} : temperature max.
                                 -nmax {nmax} : cut-off number of summation, larger value is plausible {30}
                                 -nde {ndiv_e} : number of devision for energy
                                 -ndt {ndiv_temp} : number of devision for temperature
@@ -380,10 +404,8 @@ class subs:
                                 -sigma {sigma} : standard derivation of Gaussian """
             print(helpmessage)
             sys.exit()
-        self.sw_run_emod:bool = False
-        self.sw_run_ccd:bool = False
-        self.sw_run_ph:bool = False
-        print("*** read input parameters by sys.argv ***")
+
+        print("*** read input parameters from sys.argv ***")
         print("* CAUTION: The parameters in LUMIN will be overwritten !!!")
         if ( self.mat == "" ):
             self.mat: str = args[1]
@@ -419,14 +441,14 @@ class subs:
         if ( "-pph" in args ):
             self.sw_plt_ph:bool = True
             print("* sw_plt_ph: ", self.sw_plt_ph)
-        # emod
+        """ emod """
         if ( "-brav" in args ):
             self.brav:str = args[args.index("-brav")+1]
         if ( "-dr" in args ):
             self.dratio:float = float(args[args.index("-dr")+1])
         if ( "-ndem" in args ):
             self.ndiv_emod:int = int(args[args.index("-ndem")+1])
-        # ccd
+        """ ccd """
         if ( "-Eabs" in args ):
             self.Eabs0:float = float(args[args.index("-Eabs")+1])
         if ( "-Eem" in args ):
@@ -451,6 +473,10 @@ class subs:
             self.emin_ccd:float = float(args[args.index("-emin_ccd")+1])
         if ( "-emax_ccd" in args ):
             self.emax_ccd:float = float(args[args.index("-emax_ccd")+1])
+        if ( "-tempmin" in args ):
+            self.tempmin:float = float(args[args.index("-tempmin")+1])
+        if ( "-tempmax" in args ):
+            self.tempmax:float = float(args[args.index("-tempmax")+1])
         if ( "-nmax" in args ):
             self.nmax:int = int(args[args.index("-nmax")+1])
         if ( "-nde" in args ):
@@ -459,7 +485,7 @@ class subs:
             self.ndiv_temp:int = int(args[args.index("-ndt")+1])
         if ( "-ndeg" in args ):
             self.ndiv_eg:int = int(args[args.index("-ndeg")+1])
-        # ph
+        """ ph """
         if ( "-ndim" in args ):
             self.ndim:int = [int(args[args.index("-ndim")+1+i]) for i in range(3)]
             self.ndim = np.array(self.ndim)
@@ -477,6 +503,9 @@ class subs:
             self.sw_qk:str = args[args.index("-sw_qk")+1]
         if ( "-sigma" in args ):
             self.sigma:float = float(args[args.index("-sigma")+1])
+
+        print("* --- Finish subs.get_prms --- *")
+        print("*")
         
     ### ----------------------------------------------------------------------------- ###
     def get_POSCAR(self, fn:str):
@@ -516,7 +545,6 @@ class subs:
     def Lorentzian(self, x:float):
         """ define Lorentzian """
         
-        ### can you define this by lambda formula
         return (1./np.pi)*(0.5*self.gamma / (x**2.+(0.5*self.gamma)**2.))
 
     ### ----------------------------------------------------------------------------- ###
