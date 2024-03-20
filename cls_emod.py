@@ -6,13 +6,14 @@ from sklearn.metrics import r2_score
 import sys, os, pathlib
 import cls_subs as subs
 
+prms = subs.subs()
+
 class emod:
     """ Class: calculate the elastic moduli using first-principles codes """
     ### ----------------------------------------------------------------------------- ###
     def __init__(self):
         """ Constructor of reading parameters from input file """
         
-        prms = subs.subs()
         print("* --- Start Elastic Moduli calculation--- *")
         print("*")
         p = pathlib.Path("{mat}.scf_Bmod.in".format(mat=prms.mat))
@@ -30,7 +31,7 @@ class emod:
     ### ----------------------------------------------------------------------------- ###
     def qjob_dis(self, ndir:str, alat:float, plat:float):
         """ execute a job of distorted crystal """
-        
+
         plat = alat * plat
         plat_str1:str = " {plat11} {plat12} {plat13} ".format(plat11=plat[0,0], plat12=plat[0,1], plat13=plat[0,2])
         plat_str2:str = " {plat21} {plat22} {plat23} ".format(plat21=plat[1,0], plat22=plat[1,1], plat23=plat[1,2])
@@ -53,7 +54,7 @@ class emod:
     ### ----------------------------------------------------------------------------- ###
     def calc_Bmod(self):
         """ calculate volume dependencen of the total energy """
-        
+
         print("*** First-principles for Bulk Modulus ***")
         p = pathlib.Path("Bmod")
         if ( not p.is_dir() ):
@@ -67,9 +68,9 @@ class emod:
         if ( not p.exists() ):
             with open(fn,"w") as f:
                 f.write("### delta  alat(Bohr)  volume(Bohr^3)  tote(Ry) \n")
-            for i, al in enumerate(alat):
-                ndir:str = "alat"+str(round(al,6))
-                p = pathlib.Path(ndir)
+        for i, al in enumerate(alat):
+            ndir:str = "alat"+str(round(al,6))
+            p = pathlib.Path(ndir)
             if ( not p.is_dir() ):
                 (te, vol) = emod.qjob_dis(self, ndir, al, plat)
                 string = " {delta}   {alat}   {volume}   {tote} \n".format(delta=delta[i],alat=al,volume=vol,tote=te)
@@ -81,7 +82,7 @@ class emod:
     ### ----------------------------------------------------------------------------- ###
     def calc_Emod(self, epsilon:float, dfmat:float, sym:str):
         """ calculate strain dependence of the total energy """
-        
+
         print("*** First-principles for Elastic Moduli {sym} ***".format(sym=sym))
         p = pathlib.Path(sym)
         if ( not p.is_dir() ):
@@ -108,7 +109,7 @@ class emod:
     ### ----------------------------------------------------------------------------- ###
     def Emod_fit(self, para:float, sym:str, ndiv:int = 15):
         """ Fitting the elastic modulus """
-        
+
         def BM_eq(x:float, E0:float, V0:float, B0:float, B0p:float):
             """ Birch-Murnaghan equation of state """
             q:float = (V0/x)**(2./3.) - 1.
@@ -144,38 +145,39 @@ class emod:
             fit:float = BM_eq(x_cont, Emod[0], Emod[1], Emod[2], Emod[3])
             fit_comp:float = BM_eq(volume, Emod[0], Emod[1], Emod[2], Emod[3])
             y_plt:float = tote - min(tote)
-            plt.xlabel(r"Volume (Bohr$^3$)")
-            plt.ylabel(r"$\Delta$Energy (Ry)")
+            if ( prms.sw_plt_emod ):
+                plt.xlabel(r"Volume (Bohr$^3$)")
+                plt.ylabel(r"$\Delta$Energy (Ry)")
         else:
             x_cont:float = np.linspace(min(delta)-1.e-3,max(delta)+1.e-3,10*ndiv)
             x_plt:float = delta
             fit:float = DeltaE(x_cont, Emod[0], Emod[1], Emod[2])
             fit_comp:float = DeltaE(delta, Emod[0], Emod[1], Emod[2])
             y_plt:float = np.array([(tote[i] - min(tote))/volume[i] for i in range(len(tote))])
-            plt.xlabel(r"Delta")
-            plt.ylabel(r"$\Delta$Energy/Volume (Ry/Bohr$^3$)")
+            if ( prms.sw_plt_emod ):
+                plt.xlabel(r"Delta")
+                plt.ylabel(r"$\Delta$Energy/Volume (Ry/Bohr$^3$)")
         r2:float = r2_score(y_plt, fit_comp)
         print("* R2: ", r2)
         print("*")
-        plt.plot(x_cont, fit, label="Fit",color="mediumblue")
-        plt.scatter(x_plt, y_plt, label="Data",color="white",edgecolor="crimson",s=30)
-        plt.legend()
-        plt.savefig(sym+"_fit.pdf")
         if ( prms.sw_plt_emod ):
+            plt.plot(x_cont, fit, label="Fit",color="mediumblue")
+            plt.scatter(x_plt, y_plt, label="Data",color="white",edgecolor="crimson",s=30)
+            plt.legend()
+            plt.savefig(sym+"_fit.pdf")
             plt.show()
         return ( Emod )
 
     ### ----------------------------------------------------------------------------- ###
-    def get_Bmod(self, Bmod0:float):
+    def get_Bmod(self):
         """ get Bulk modulus by fitting against Birch-Murnaghan equation of state """
 
         print("*** Bulk modulus ***")
-        if ( abs(Bmod0) < 1.e-5 ):
-            Bmod0:float = 1.e2
+        Bmod0:float = 1.e2
         (alat, plat, elements, nelems, natm, pos, volume) = prms.get_POSCAR("POSCAR0")
         para:float = [0.0,volume,Bmod0/prms.AU2GPa,3.]
-        ccd.calc_Bmod(self)
-        Emod:float = ccd.Emod_fit(self,para,"Bmod")
+        emod.calc_Bmod(self)
+        Emod:float = emod.Emod_fit(self,para,"Bmod")
         self.Bmod:float = prms.AU2GPa * Emod[2]
         print("* Bulk modulus by fitting BM_eq (GPa): ", self.Bmod)
         print("*")
@@ -183,7 +185,7 @@ class emod:
     ### ----------------------------------------------------------------------------- ###
     def get_Econst(self):
         """ check symmetry of the system & get elastic constants"""
-        
+
         para:float = [0.,0.,0.1]
         ep:float = np.linspace(-prms.dratio, prms.dratio, prms.ndiv_emod)
         if ( prms.brav == "cub" ):  # simple cubic
@@ -195,14 +197,14 @@ class emod:
             """ C11 - C12 """
             sym:str = "cub-uni"
             dfmat:float = np.array([np.diag([1.+d,1.-d,1./(1.-d**2.)]).tolist() for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E10:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E10:float = emod.Emod_fit(self, para, sym)
             E1:float = E10[2]
             """ 2 * C44 """
             sym:str = "cub-xy"
             dfmat:float = np.array([[[1.,d,0.],[d,1.,0.],[0.,0.,1./(1.-d**2.)]] for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E20:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E20:float = emod.Emod_fit(self, para, sym)
             E2:float = E20[2]
 
             self.C11:float = prms.AU2GPa * (6.*E1 + 9.*self.Bmod)/9.
@@ -211,7 +213,7 @@ class emod:
             Econst:float = np.array([self.C11, self.C12, self.C44])
             Cp:float = 0.5*(self.C11-self.C12)
             Cpp:float = self.C12 - self.C44
-            GV:float = 0.2*(3.*self.C44 + 2.*self.Cp)
+            GV:float = 0.2*(3.*self.C44 + 2.*Cp)
             self.Ymod:float = 9.*self.Bmod*GV/(3.*self.Bmod+GV)
             self.nu:float = 0.5 - self.Ymod/(6.*self.Bmod)
             zeta:float = (self.C11 + 8.*self.C12)/(7.*self.C11 + 2.*self.C12)
@@ -246,38 +248,38 @@ class emod:
             """ C11+C12 """
             sym:str = "tet_pl"
             dfmat:float = np.array([np.diag([1.+d,1.+d,1.]).tolist() for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E10:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E10:float = emod.Emod_fit(self, para, sym)
             E1:float = E10[2]
             """ C11+C12+2*C33-4*C13 """
             sym:str = "tet_pl2"
             dfmat:float = np.array([np.diag([1.+d,1.+d,1./((1.+d)**2.)]).tolist() for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E20:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E20:float = emod.Emod_fit(self, para, sym)
             E2:float = E20[2]
             """ 0.5*C33 """
             sym:str = "tet_ax"
             dfmat:float = np.array([np.diag([1.,1.,1.+d]).tolist() for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E30:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E30:float = emod.Emod_fit(self, para, sym)
             E3:float = E30[2]
             """ C11-C12 """
             sym:str = "tet_ortho"
             dfmat:float = np.array([np.diag([np.sqrt((1.+d)/(1.-d)),np.sqrt((1.-d)/(1.+d)),1.]).tolist() for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E40:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E40:float = emod.Emod_fit(self, para, sym)
             E4:float = E40[2]
             """ 4*C44 """
             sym:str = "tet_yz"
             dfmat:float = np.array([[[1.,0.,d],[0.,1.,d],[d,d,1.+d**2.]] for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E50:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E50:float = emod.Emod_fit(self, para, sym)
             E5:float = E50[2]
             """ 2*C66 """
             sym:str = "tet_xy"
             dfmat:float = np.array([[[np.sqrt(1.+d**2.),d,0.],[d,np.sqrt(1.+d**2.),0.],[0.,0.,1.]] for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E60:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E60:float = emod.Emod_fit(self, para, sym)
             E6:float = E60[2]
 
             self.C11:float = prms.AU2GPa * 0.5 * (E1 + E4)
@@ -320,32 +322,32 @@ class emod:
             """ C11 + C12 """
             sym:str = "hex-pl"
             dfmat:float = np.array([np.diag([1.+d,1.+d,1.]).tolist() for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E10:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E10:float = emod.Emod_fit(self, para, sym)
             E1:float = E10[2]
             """ 0.25 * (C11 - C12) """
             sym:str = "hex-xy"
             dfmat:float = np.array([[[1.,0.5*d,0.],[0.5*d,1.,0.],[0.,0.,1.]] for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E20:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E20:float = emod.Emod_fit(self, para, sym)
             E2:float = E20[2]
             """ 0.5 * C33 """
             sym:str = "hex-ax"
             dfmat:float = np.array([np.diag([1.,1.,1.+d]).tolist() for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E30:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E30:float = emod.Emod_fit(self, para, sym)
             E3:float = E30[2]
             """ 0.5 * C44 """
             sym:str = "hex-yz"
             dfmat:float = np.array([[[1.,0.,0.],[0.,1.,0.5*d],[0.,0.5*d,1.]] for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E40:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E40:float = emod.Emod_fit(self, para, sym)
             E4:float = E40[2]
             """ C11 + C12 + 2.*C13 + 0.5*C33 """
             sym:str = "hex-all"
             dfmat:float = np.array([np.diag([1.+d,1.+d,1.+d]).tolist() for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E50:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E50:float = emod.Emod_fit(self, para, sym)
             E5:float = E50[2]
 
             self.C11:float = prms.AU2GPa * 0.5 * (E1 + 4.*E2)
@@ -384,50 +386,50 @@ class emod:
             """ 0.5 * C11 """
             sym:str = "mono-unix"
             dfmat:float = np.array([np.diag([1.+d,1.,1.]).tolist() for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E10:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E10:float = emod.Emod_fit(self, para, sym)
             E1:float = E10[2]
             """ 0.5 * C22 """
             sym:str = "mono-uniy"
             dfmat:float = np.array([np.diag([1.,1.+d,1.]).tolist() for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E20:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E20:float = emod.Emod_fit(self, para, sym)
             E2:float = E20[2]
             """ 0.5 * C33 """
             sym:str = "mono-uniz"
             dfmat:float = np.array([np.diag([1.,1.,1.+d]).tolist() for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E30:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E30:float = emod.Emod_fit(self, para, sym)
             E3:float = E30[2]
             """ 0.5 * C44 """
             sym:str = "mono-yz"
             dfmat:float = np.array([[[1.,0.,0.],[0.,1.,0.5*d],[0.,0.5*d,1.]] for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E40:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E40:float = emod.Emod_fit(self, para, sym)
             E4:float = E40[2]
             """ 0.5 * C55 """
             sym:str = "mono-zx"
             dfmat:float = np.array([[[1.,0.,0.5*d],[0.,1.,0.],[0.5*d,0.,1.]] for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E50:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E50:float = emod.Emod_fit(self, para, sym)
             E5:float = E50[2]
             """ 0.5 * C66 """
             sym:str = "mono-xy"
             dfmat:float = np.array([[[1.,0.5*d,0.],[0.5*d,1.,0.],[0.,0.,1.]] for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E60:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E60:float = emod.Emod_fit(self, para, sym)
             E6:float = E60[2]
             """ 0.5*C11 + C12 + 0.5*C22 """
             sym:str = "mono-plxy"
             dfmat:float = np.array([np.diag([1.+d,1.+d,1.]).tolist() for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E70:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E70:float = emod.Emod_fit(self, para, sym)
             E7:float = E70[2]
             """ 0.5*C11 + C13 + 0.5*C33 """
             sym:str = "mono-plzx"
             dfmat:float = np.array([np.diag([1.+d,1.,1.+d]).tolist() for d in ep])
-            ccd.calc_Emod(self, ep, dfmat, sym)
-            E80:float = ccd.Emod_fit(self, para, sym)
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E80:float = emod.Emod_fit(self, para, sym)
             E8:float = E80[2]
 
             self.C11:float = prms.AU2GPa * 2. * E1

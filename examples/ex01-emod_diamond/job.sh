@@ -5,7 +5,5 @@
 #$ -cwd
 #$ -V
 #$ -S /bin/bash
-exe=$HOME/lumin
 
-python $exe/lumin.py -emod >& lumin.out
-
+lumin -emod >& lumin.out

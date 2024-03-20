@@ -1,10 +1,10 @@
-""" See M. A. Reshchikov & H. Morkoc, Luminescence properties of defects in GaN, J. Appl. Phys. 97 (2005) 061301.
-        Y. Jia, A. Miglio, S. Ponce, M. Mikami, & X. Gonze, First-principles study of the luminescence of Eu2+-doped phosphors, PRB 96 (2017) 125132. """
 import numpy as np
 import matplotlib.pyplot as plt
 import subprocess as sub
 import os, sys, pathlib
 import cls_subs as subs
+
+prms = subs.subs()
 
 class ccd:
     """ Class: configuration coordinate diagram """
@@ -12,7 +12,6 @@ class ccd:
     def __init__(self):
         """ Constructor of configuration coordinate model """
         
-        prms = subs.subs()
         print("* --- Start calculation of configuration coordinate model--- *")
         if ( prms.sw_unit in {"eV","nm"} ):
             unit:float = 1.0
@@ -310,7 +309,7 @@ class ccd:
         self.Labs = self.I0 * self.Labs / max(self.Labs)
 
     ### ----------------------------------------------------------------------------- ###
-    def calc_Ecenter_shift(self)
+    def calc_Ecenter_shift(self):
         """ Eem shift and Eabs shift as a function of temperature """
         
         self.temp:float = np.linspace(prms.tempmin, prms.tempmax, prms.ndiv_temp)

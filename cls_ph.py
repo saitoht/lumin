@@ -6,13 +6,14 @@ import subprocess as sub
 import sys, os, pathlib, yaml
 import cls_subs as subs
 
+prms = subs.subs()
+
 class ph:
     """ Class: Phonon calculations """
     ### ----------------------------------------------------------------------------- ###
     def __init__(self):
         """ Constructor of ph """
 
-        prms = subs.subs()        
         print("* --- Class Phonon --- *")
         if ( prms.sw_phrun ):
             ph.phonon(self)

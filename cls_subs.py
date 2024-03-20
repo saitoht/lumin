@@ -83,7 +83,7 @@ class subs:
         self.ndiv_eg:int = 12
         """ for ph """
         self.ndim:int = [1,1,1]
-        self.sw_HP:str = "none"
+        self.sw_HR:str = "none"
         self.sw_phrun:bool = False
         self.sw_plt_ph:bool = False
         self.sigma:float = 6.e-3
@@ -102,14 +102,12 @@ class subs:
     def get_prms(self):
         """ get parameters for calculations """
         
-        print("* --- subs.get_prms --- *")
         sw_sys:bool = False
         sw_emod:bool = False
         sw_ph:bool = False
         sw_ccd:bool = False
         p = pathlib.Path("LUMIN")
         if ( p.exists() ):
-            print("*** Start reading LUMIN ***")
             with open("LUMIN","r") as f:
                 inputs:str = f.readlines()
             for ip in inputs:
@@ -119,29 +117,21 @@ class subs:
                     sw_emod:bool = False
                     sw_ph:bool = False
                     sw_ccd:bool = False
-                    print("*")
-                    print("*** system parameters ***")
                 elif ( line[0] == "&emod" ):
                     sw_sys:bool = False
                     sw_emod:bool = True
                     sw_ph:bool = False
                     sw_ccd:bool = False
-                    print("*")
-                    print("*** elastic moduli parameters ***")
                 elif ( line[0] == "&ph" ):
                     sw_sys:bool = False
                     sw_emod:bool = False
                     sw_ph:bool = True
                     sw_ccd:bool = False
-                    print("*")
-                    print("*** phonon parameters ***")
                 elif ( line[0] == "&ccd" ):
                     sw_sys:bool = False
                     sw_emod:bool = False
                     sw_ph:bool = False
                     sw_ccd:bool = True
-                    print("*")
-                    print("*** configuration coordinate diagram parameters ***")
                 else:
                     pass
                 
@@ -151,19 +141,16 @@ class subs:
                         self.mat:str = line[1]
                     else:
                         self.mat:str = line[0].replace("mat=","")
-                    print("* mat: ", self.mat)
                 elif ( sw_sys and line[0][0:3] == "nc=" ):
                     if ( len(line) == 2 ):
                         self.nc:int = int(line[1])
                     else:
                         self.nc:int = int(line[0].replace("nc=",""))
-                    print("* nc: ", self.nc)
                 elif ( sw_sys and line[0][0:4] == "exe=" ):
                     if ( len(line) == 2 ):
                         self.exe:str = line[1]
                     else:
                         self.exe:str = line[0].replace("exe=","")
-                    print("* exe: ", self.exe)
                 else:
                     pass
 
@@ -173,25 +160,21 @@ class subs:
                         self.brav:str = line[1]
                     else:
                         self.brav:str = line[0].replace("brav=","")
-                    print("* brav: ", self.brav)
                 elif ( sw_emod and line[0][0:12] == "sw_plt_emod=" ):
                     if ( len(line) == 2 ):
                         self.sw_plt_emod:bool = bool(int(line[1]))
                     else:
                         self.sw_plt_emod:bool = bool(int(line[0].replace("sw_plt_emod=","")))
-                    print("* sw_plt_emod: ", self.sw_plt_emod)
                 elif ( sw_emod and line[0][0:7] == "dratio=" ):
                     if ( len(line) == 2 ):
                         self.dratio:float = float(line[1])
                     else:
                         self.dratio:float = float(line[0].replace("dratio=",""))
-                    print("* dratio: ", self.dratio)
                 elif ( sw_emod and line[0][0:10] == "ndiv_emod=" ):
                     if ( len(line) == 2 ):
                         self.ndiv_emod:int = int(line[1])
                     else:
                         self.ndiv_emod:int = int(line[0].replace("ndiv_emod=",""))
-                    print("* ndiv_emod: ", self.ndiv_emod)
                 else:
                     pass
 
@@ -201,115 +184,96 @@ class subs:
                         self.Eabs0:float = float(line[1])
                     else:
                         self.Eabs0:float = float(line[0].replace("Eabs0=",""))
-                    print("* Eabs0 (eV): ", self.Eabs0)
                 elif ( sw_ccd and line[0][0:5] == "Eem0=" ):
                     if ( len(line) == 2 ):
                         self.Eem0:float = float(line[1])
                     else:
                         self.Eem0:float = float(line[0].replace("Eem0=",""))
-                    print("* Eem0 (eV): ", self.Eem0)
                 elif ( sw_ccd and line[0][0:5] == "EFCg=" ):
                     if ( len(line) == 2 ):
                         self.EFCg:float = float(line[1])
                     else:
                         self.EFCg:float = float(line[0].replace("EFCg=",""))
-                    print("* EFCg (eV): ", self.EFCg)
                 elif ( sw_ccd and line[0][0:3] == "dQ=" ):
                     if ( len(line) == 2 ):
                         self.dQ:float = float(line[1])
                     else:
                         self.dQ:float = float(line[0].replace("dQ=",""))
-                    print("* dQ (eV): ", self.dQ)
                 elif ( sw_ccd and line[0][0:3] == "I0=" ):
                     if ( len(line) == 2 ):
                         self.I0:float = float(line[1])
                     else:
                         self.I0:float = float(line[0].replace("I0=",""))
-                    print("* I0: ", self.I0)
                 elif ( sw_ccd and line[0][0:6] == "gamma=" ):
                     if ( len(line) == 2 ):
                         self.gamma:float = float(line[1])
                     else:
                         self.gamma:float = float(line[0].replace("gamma=",""))
-                    print("* gamma: ", self.gamma)
                 elif ( sw_ccd and line[0][0:11] == "sw_plt_ccd=" ):
                     if ( len(line) == 2 ):
                         self.sw_plt_ccd:bool = bool(int(line[1]))
                     else:
                         self.sw_plt_ccd:bool = bool(int(line[0].replace("sw_plt_ccd=","")))
-                    print("* sw_plt_ccd: ", self.sw_plt_ccd)
                 elif ( sw_ccd and line[0][0:6] == "sw_eg=" ):
                     if ( len(line) == 2 ):
                         self.sw_eg:bool = bool(int(line[1]))
                     else:
                         self.sw_eg:bool = bool(int(line[0].replace("sw_eg=","")))
-                    print("* sw_eg: ", self.sw_eg)
                 elif ( sw_ccd and line[0][0:8] == "sw_unit=" ):
                     if ( len(line) == 2 ):
                         self.sw_unit:str = line[1]
                     else:
                         self.sw_unit:str = line[0].replace("sw_unit=","")
-                    print("* sw_unit: ", self.sw_unit)
                 elif ( sw_ccd and line[0][0:7] == "stateg=" ):
                     if ( len(line) == 2 ):
                         self.stateg:str = line[1]
                     else:
                         self.stateg:str = line[0].replace("stateg=","")
-                    print("* stateg: ", self.stateg)
                 elif ( sw_ccd and line[0][0:7] == "statee=" ):
                     if ( len(line) == 2 ):
                         self.statee:str = line[1]
                     else:
                         self.statee:str = line[0].replace("statee=","")
-                    print("* statee: ", self.statee)
                 elif ( sw_ccd and line[0][0:9] == "emin_ccd=" ):
                     if ( len(line) == 2 ):
                         self.emin_ccd:float = float(line[1])
                     else:
                         self.emin_ccd:float = float(line[0].replace("emin_ccd=",""))
-                    print("* emin_ccd (eV): ", self.emin_ccd)
                 elif ( sw_ccd and line[0][0:9] == "emax_ccd=" ):
                     if ( len(line) == 2 ):
                         self.emax_ccd:float = float(line[1])
                     else:
                         self.emax_ccd:float = float(line[0].replace("emax_ccd=",""))
-                    print("* emax_ccd (eV): ", self.emax_ccd)
                 elif ( sw_ccd and line[0][0:8] == "tempmin=" ):
                     if ( len(line) == 2 ):
                         self.tempmin:float = float(line[1])
                     else:
                         self.tempmin:float = float(line[0].replace("tempmin=",""))
-                    print("* tempmin (K): ", self.tempmin)
                 elif ( sw_ccd and line[0][0:8] == "tempmax=" ):
                     if ( len(line) == 2 ):
                         self.tempmax:float = float(line[1])
                     else:
                         self.tempmax:float = float(line[0].replace("tempmax=",""))
-                    print("* tempmax (K): ", self.tempmax)
                 elif ( sw_ccd and line[0][0:5] == "nmax=" ):
                     if ( len(line) == 2 ):
                         self.nmax:int = int(line[1])
                     else:
                         self.nmax:int = int(line[0].replace("nmax=",""))
-                    print("* nmax: ", self.nmax)
                 elif ( sw_ccd and line[0][0:7] == "ndiv_e=" ):
                     if ( len(line) == 2 ):
                         self.ndiv_e:int = int(line[1])
                     else:
                         self.ndiv_e:int = int(line[0].replace("ndiv_e=",""))
-                    print("* ndiv_e: ", self.ndiv_e)
                 elif ( sw_ccd and line[0][0:10] == "ndiv_temp=" ):
                     if ( len(line) == 2 ):
                         self.ndiv_temp:int = int(line[1])
                     else:
                         self.ndiv_temp:int = int(line[0].replace("ndiv_temp=",""))
-                    print("* ndiv_temp: ", self.ndiv_temp)
                 elif ( sw_ccd and line[0][0:8] == "ndiv_eg=" ):
                     if ( len(line) == 2 ):
                         self.ndiv_eg:int = int(line[1])
                     else:
                         self.ndiv_eg:int = int(line[0].replace("ndiv_eg=",""))
-                    print("* ndiv_eg: ", self.ndiv_eg)
                 else:
                     pass
             
@@ -319,47 +283,39 @@ class subs:
                         self.ndim:int = [int(l) for l in line[1:4]]
                     else:
                         self.ndim:int = [int(line[0].replace("ndim=","")),int(line[1]),int(line[2])]
-                    print("* ndim: ", self.ndim)
                     self.ndim = np.array(self.ndim)
                 elif ( sw_ph and line[0][0:7] == "emin_ph=" ):
                     if ( len(line) == 2 ):
                         self.emin_ph:float = float(line[1])
                     else:
                         self.emin_ph:float = float(line[0].replace("emin_ph=",""))
-                    print("* emin_ph: ", self.emin_ph)
                 elif ( sw_ph and line[0][0:7] == "emax_ph=" ):
                     if ( len(line) == 2 ):
                         self.emax_ph:float = float(line[1])
                     else:
                         self.emax_ph:float = float(line[0].replace("emax_ph=",""))
-                    print("* emax_ph: ", self.emax_ph)
                 elif ( sw_ph and line[0][0:6] == "sigma=" ):
                     if ( len(line) == 2 ):
                         self.sigma:float = float(line[1])
                     else:
                         self.sigma:float = float(line[0].replace("sigma=",""))
-                    print("* sigma: ", self.sigma)
                 elif ( sw_ph and line[0][0:6] == "sw_HR=" ):
                     if ( len(line) == 2 ):
                         self.sw_HR:str = line[1]
                     else:
                         self.sw_HR:str = line[0].replace("sw_HR=","")
-                    print("* sw_HR: ", self.sw_HR)
                 elif ( sw_ph and line[0][0:9] == "sw_phrun=" ):
                     if ( len(line) == 2 ):
                         self.sw_phrun:bool = bool(int(line[1]))
                     else:
                         self.sw_phrun:bool = bool(int(line[0].replace("sw_phrun=","")))
-                    print("* sw_phrun: ", self.sw_phrun)
                 elif ( sw_ph and line[0][0:10] == "sw_plt_ph=" ):
                     if ( len(line) == 2 ):
                         self.sw_plt_ph:str = line[1]
                     else:
                         self.sw_plt_ph:str = line[0].replace("sw_plt_ph=","")
-                    print("* sw_plt_ph: ", self.sw_plt_ph)
                 else:
                     pass
-            print("*** Finish reading LUMIN ***")
         else:
             pass
 
@@ -405,42 +361,28 @@ class subs:
             print(helpmessage)
             sys.exit()
 
-        print("*** read input parameters from sys.argv ***")
-        print("* CAUTION: The parameters in LUMIN will be overwritten !!!")
-        if ( self.mat == "" ):
+        if ( ( self.mat == "" ) and ( not args[1][0] == "-" ) ):
             self.mat: str = args[1]
-            print("* mat: ", self.mat)
         if ( "-emod" in args ):
             self.sw_run_emod:bool = True
-            print("* sw_run_emod: ", self.sw_run_emod)
         if ( "-ccd" in args ):
             self.sw_run_ccd:bool = True
-            print("* sw_run_ccd: ", self.sw_run_ccd)
         if ( "-ph" in args ):
             self.sw_run_ph:bool = True
-            print("* sw_run_ph: ", self.sw_run_ph)
         if ( "-nc" in args ):
             self.nc:int = int(args[args.index("-nc")+1])
-            print("* nc: ", self.nc)
         if ( "-exe" in args ):
             self.exe:str = args[args.index("-exe")+1]
-            print("* exe: ", self.exe)
         if ( "-p" in args ):
             self.sw_plt_emod:bool = True
             self.sw_plt_ccd:bool = True
             self.sw_plt_ph:bool = True
-            print("* sw_plt_emod: ", self.sw_plt_emod)
-            print("* sw_plt_ccd: ", self.sw_plt_ccd)
-            print("* sw_plt_ph: ", self.sw_plt_ph)
         if ( "-pemod" in args ):
             self.sw_plt_emod:bool = True
-            print("* sw_plt_emod: ", self.sw_plt_emod)
         if ( "-pccd" in args ):
             self.sw_plt_ccd:bool = True
-            print("* sw_plt_ccd: ", self.sw_plt_ccd)
         if ( "-pph" in args ):
             self.sw_plt_ph:bool = True
-            print("* sw_plt_ph: ", self.sw_plt_ph)
         """ emod """
         if ( "-brav" in args ):
             self.brav:str = args[args.index("-brav")+1]
@@ -504,8 +446,58 @@ class subs:
         if ( "-sigma" in args ):
             self.sigma:float = float(args[args.index("-sigma")+1])
 
-        print("* --- Finish subs.get_prms --- *")
+    ### ----------------------------------------------------------------------------- ###
+    def ck_prms(self):
+        """ check parameters """
+
+        print("* --- check parameters --- *")
+        print("*** system parameters ***")
+        print("* mat: ", self.mat)
+        print("* sw_run_emod: ", self.sw_run_emod)
+        print("* sw_run_ccd: ", self.sw_run_ccd)
+        print("* sw_run_ph: ", self.sw_run_ph)
+        print("* nc: ", self.nc)
+        print("* exe: ", self.exe)
         print("*")
+        if ( self.sw_run_emod ):
+            print("*** elastic moduli parameters ***")
+            print("* brav: ", self.brav)
+            print("* sw_plt_emod: ", self.sw_plt_emod)
+            print("* dratio: ", self.dratio)
+            print("* ndiv_emod: ", self.ndiv_emod)
+            print("*")
+        if ( self.sw_run_ccd ):
+            print("*** configuration coordinate diagram parameters ***")        
+            print("* Eabs0 (eV): ", self.Eabs0)
+            print("* Eem0 (eV): ", self.Eem0)
+            print("* EFCg (eV): ", self.EFCg)
+            print("* dQ (eV): ", self.dQ)
+            print("* I0: ", self.I0)
+            print("* gamma: ", self.gamma)
+            print("* sw_plt_ccd: ", self.sw_plt_ccd)
+            print("* sw_eg: ", self.sw_eg)
+            print("* sw_unit: ", self.sw_unit)
+            print("* stateg: ", self.stateg)
+            print("* statee: ", self.statee)
+            print("* emin_ccd (eV): ", self.emin_ccd)
+            print("* emax_ccd (eV): ", self.emax_ccd)
+            print("* tempmin (K): ", self.tempmin)
+            print("* tempmax (K): ", self.tempmax)
+            print("* nmax: ", self.nmax)
+            print("* ndiv_e: ", self.ndiv_e)
+            print("* ndiv_temp: ", self.ndiv_temp)
+            print("* ndiv_eg: ", self.ndiv_eg)
+            print("*")
+        if ( self.sw_run_ph ):
+            print("*** phonon parameters ***")
+            print("* ndim: ", self.ndim)
+            print("* emin_ph: ", self.emin_ph)
+            print("* emax_ph: ", self.emax_ph)
+            print("* sigma: ", self.sigma)
+            print("* sw_HR: ", self.sw_HR)
+            print("* sw_phrun: ", self.sw_phrun)
+            print("*")
+        print("* --- Finish check parameters --- *")
         
     ### ----------------------------------------------------------------------------- ###
     def get_POSCAR(self, fn:str):

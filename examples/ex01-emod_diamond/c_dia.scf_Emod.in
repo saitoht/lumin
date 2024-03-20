@@ -1,0 +1,47 @@
+&control
+ calculation = 'scf'
+ prefix='c_dia',
+ tstress = .true.
+ tprnfor = .true.
+ pseudo_dir = '../../',
+ outdir='./work/'
+ disk_io='low'
+ nstep = 200
+/
+&system
+ ibrav = 0,
+ nat = 8,
+ ntyp = 1,
+ ecutwfc = 60.0,
+ ecutrho = 360.0,
+ occupations = 'tetrahedra_opt'
+ nspin = 1
+ smearing = 'm-p'
+ degauss = 0.01
+/
+&electrons
+ electron_maxstep = 200
+ mixing_beta = 0.3
+ conv_thr = 1.0d-8
+/
+&ions
+/
+&cell
+/
+ATOMIC_SPECIES
+C   12.011   C.pbe-n-kjpaw_psl.1.0.0.UPF
+ATOMIC_POSITIONS {crystal}
+C     0.000000000         0.000000000         0.500000000
+C     0.000000000         0.500000000         0.000000000
+C     0.500000000         0.500000000         0.500000000
+C     0.500000000         0.000000000         0.000000000
+C     0.750000000         0.250000000         0.250000000
+C     0.250000000         0.250000000         0.750000000
+C     0.250000000         0.750000000         0.250000000
+C     0.750000000         0.750000000         0.750000000
+K_POINTS {automatic}
+10 10 10 1 1 1
+CELL_PARAMETERS bohr
+{plat1}
+{plat2}
+{plat3}
