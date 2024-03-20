@@ -58,6 +58,7 @@ class ph:
     ### ----------------------------------------------------------------------------- ###
     def Huang_Rhys(self):
         """ obtain Huang_Rhys parameter decomposed by phonon mode """
+        
         print("* --- Huang Rhys parameter obtained in Multi-D CCD model --- *")
         print("* use information of Gamma (0,0,0) point")
         p = pathlib.Path("qpoints.yaml")

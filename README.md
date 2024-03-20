@@ -5,6 +5,9 @@ Simulate luminescent properties of materials using the information from first-pr
 For first-principles calculations
 - Quantum ESPRESSO
 
+For Phonon calculations
+- Phonopy
+
 For Python modules
 - numpy
 - matplotlib
@@ -15,17 +18,37 @@ For Python modules
 - sklearn
 
 ## Usage
+Before you use the program "lumin", you should activate the path by writing
+```shell-session
+export PATH=$PATH:$HOME/lumin
+```
+in ~/.bashrc file. 
+After that, you should execute
+```shell-session
+source ~/.bashrc
+```
+to reflect the settings or exit the terminal once.
+
+In the case of ZSH shell, you will see ~/.zshrc instead of ~/.bashrc.
+You can check which SHELL you are using by the following command.
+```shell-session
+echo $SHELL
+```
+
 For elastic moduli calculations
 ```shell-session
 lumin -emod
 ```
+
+I checked the results for cubic system.
+You should be careful if you calculate non-cubic system.
 
 For phonon calculations
 ```shell-session
 lumin -ph
 ```
 
-for configuration coordinate diagram calculations
+For configuration coordinate diagram calculations
 ```shell-session
 lumin -ccd
 ```

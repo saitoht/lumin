@@ -1,0 +1,7 @@
+&sys
+ mat=gaas
+ nc=20
+ exe=$HOME/qe7.2/bin
+&ph
+ ndim=3 3 3
+ sw_phrun=1

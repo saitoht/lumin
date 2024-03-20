@@ -1,0 +1,37 @@
+&control
+ calculation = 'scf'
+ prefix='gaas',
+ pseudo_dir = '../pot/',
+ outdir='./work/'
+ etot_conv_thr = 1.d-5
+ forc_conv_thr = 1.d-4
+ disk_io='low'
+/
+&system
+ ibrav = 2,
+ celldm(1) = 10.6839445908,
+ nat = 2,
+ ntyp = 2,
+ ecutwfc = 80.0,
+ ecutrho = 400.0,
+ occupations = 'smearing'
+ nspin = 1
+ smearing = 'gaussian'
+ degauss = 0.005
+/
+&electrons
+ mixing_beta = 0.3
+ conv_thr = 1.0d-8
+/
+&ions
+/
+&cell
+/
+ATOMIC_SPECIES
+Ga  69.723     Ga.pbesol-dn-kjpaw_psl.1.0.0.UPF
+As  74.9216    As.pbesol-n-kjpaw_psl.1.0.0.UPF
+ATOMIC_POSITIONS {crystal}
+Ga           0.000000   0.000000   0.000000
+As           0.250000   0.250000   0.250000
+K_POINTS {automatic}
+12 12 12 0 0 0

@@ -19,7 +19,7 @@ class ccd:
             unit:float = prms.eV2cm
         ccd.get_Stokes(self)
         ccd.get_DeltaQ(self)
-        if ( sw_eg ):
+        if ( prms.sw_eg ):
             ccd.calc_Eeg(self,prms.stateg)
             ccd.calc_Eeg(self,prms.statee)
             (Qming_3dim,Omegag,Sem,Qming_2dim,Omegag_2dim,Sem_2dim) = ccd.fit_Ecurve(self,prms.stateg,prms.EFCg)
@@ -73,8 +73,8 @@ class ccd:
         """ plot the results of configuration coordinate model """
 
         plt.rcParams['font.family'] = 'Helvetica'
-        plt.rcParams["xtick.labelsize"]=15.0
-        plt.rcParams["ytick.labelsize"]=15.0
+        plt.rcParams["xtick.labelsize"] = 15.0
+        plt.rcParams["ytick.labelsize"] = 15.0
         plt.rcParams["xtick.major.pad"] = 5
         plt.rcParams["ytick.major.pad"] = 5
         plt.rcParams["axes.labelsize"] = 15.0
@@ -91,7 +91,7 @@ class ccd:
         plt.rcParams["xtick.minor.size"] = 3.0
         plt.rcParams["ytick.minor.size"] = 3.0
         
-        print("* --- PLOT LINE SHAPE --- *")
+        print("*** PLOT LINE SHAPE ***")
         size:int = 30
         plt.ylabel("Intensity (a.u.)")
         plt.axhline(0, lw=0.5, c="black", linestyle="dashed")
@@ -108,7 +108,7 @@ class ccd:
             plt.savefig("Spectrum.pdf")
             plt.show()
                 
-        print("* --- PLOT TEMPERATURE DEPENDENCE OF E_EM & E_ABS --- *")
+        print("*** PLOT TEMPERATURE DEPENDENCE OF E_EM & E_ABS ***")
         plt.xlabel("Temperature (K)")
         plt.ylabel("Emission energy ({sunit})".format(sunit=prms.sw_unit))
         if ( prms.sw_unit in {"eV","cm^-1"} ):
@@ -120,7 +120,7 @@ class ccd:
             plt.savefig("Epeak_Temp.pdf")
             plt.show()
                 
-        print("* --- PLOT TEMPERATURE DEPENDENCE OF STOKES SHIFT --- *")
+        print("*** PLOT TEMPERATURE DEPENDENCE OF STOKES SHIFT ***")
         plt.xlabel("Temperature (K)")
         plt.ylabel("Stokes shift ({sunit})".format(sunit=prms.sw_unit))
         if ( prms.sw_unit in {"eV","cm^-1"} ):
@@ -130,7 +130,7 @@ class ccd:
             plt.savefig("Stokes_Temp.pdf")
             plt.show()
                 
-        print("* --- PLOT TEMPERATURE DEPENDENCE OF FWHM --- *")
+        print("*** PLOT TEMPERATURE DEPENDENCE OF FWHM ***")
         plt.xlabel("Temperature (K)")
         plt.ylabel("FWHM ({sunit})".format(sunit=prms.sw_unit))
         plt.plot(self.temp, unit*self.W, lw=1.0, c="black")
