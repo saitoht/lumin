@@ -1,5 +1,5 @@
 * --- lumin.py --- *
-*** JOB Start at 2024/03/21 15:06:09.
+*** JOB Start at 2024/03/21 17:05:52.
 *
 * --- check parameters --- *
 *** system parameters ***
@@ -40,14 +40,14 @@
 * EFCe = Eg* - Ee* (eV):  0.22999999999999995
 * Stokes shift (@ 0K) (eV):  0.44399999999999995
 * Zero phonon photoemission line (eV):  1.916
-* FWHM (@ 0K) (eV):  0.15283756078543323
-* DeltaR (ang):  0.3330718390413132
-* DeltaQ (sqrt(amu)*ang):  2.0726700580948507
-* DeltaQ[1:3]:  [1.65536094 0.97867589 0.77326246]
-* hbar*Omegag (eV):  0.020407415448910404
-* hbar*Omegae (eV):  0.021156559180434447
-* Sabs:  10.871333000722707
-* Sem:  10.48638425261372
+* FWHM (@ 0K) (eV):  0.2101016830789953
+* DeltaR (ang):  0.1762540268142144
+* DeltaQ (sqrt(amu)*ang):  1.0968097604647857
+* DeltaQ[1:3]:  [0.87597928 0.51789298 0.40919287]
+* hbar*Omegag (eV):  0.03856442610989774
+* hbar*Omegae (eV):  0.03998010259045838
+* Sabs:  5.75286167612015
+* Sem:  5.549155571255238
 *
 *** PLOT LINE SHAPE ***
 *** PLOT TEMPERATURE DEPENDENCE OF E_EM & E_ABS ***
@@ -55,5 +55,5 @@
 *** PLOT TEMPERATURE DEPENDENCE OF FWHM ***
 * --- FINISH CALCULATIONS OF STOKES SHIFT--- *
 * --- All calculations are finished! --- *
-* Computation time: 21.121574640274048 (sec)
+* Computation time: 19.0962016582489 (sec)
 *

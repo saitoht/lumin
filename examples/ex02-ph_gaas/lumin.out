@@ -1,0 +1,159 @@
+
+CommandNotFoundError: Your shell has not been properly configured to use 'conda activate'.
+To initialize your shell, run
+
+    $ conda init <SHELL_NAME>
+
+Currently supported shells are:
+  - bash
+  - fish
+  - tcsh
+  - xonsh
+  - zsh
+  - powershell
+
+See 'conda init --help' for more information and options.
+
+IMPORTANT: You may need to close and restart your shell after running 'conda init'.
+
+
+        _
+  _ __ | |__   ___  _ __   ___   _ __  _   _
+ | '_ \| '_ \ / _ \| '_ \ / _ \ | '_ \| | | |
+ | |_) | | | | (_) | | | | (_) || |_) | |_| |
+ | .__/|_| |_|\___/|_| |_|\___(_) .__/ \__, |
+ |_|                            |_|    |___/
+                                      2.20.0
+
+Compiled with OpenMP support (max 32 threads).
+Python version 3.11.6
+Spglib version 2.1.0
+
+Calculator interface: qe
+Crystal structure was read from "gaas.scf.in".
+Unit of length: au
+Displacements creation mode
+Settings:
+  Supercell: [3 3 3]
+Spacegroup: F-43m (216)
+Use -v option to watch primitive cell, unit cell, and supercell structures.
+
+"phonopy_disp.yaml" and supercells have been created.
+
+Summary of calculation was written in "phonopy_disp.yaml".
+                 _
+   ___ _ __   __| |
+  / _ \ '_ \ / _` |
+ |  __/ | | | (_| |
+  \___|_| |_|\__,_|
+
+        _
+  _ __ | |__   ___  _ __   ___   _ __  _   _
+ | '_ \| '_ \ / _ \| '_ \ / _ \ | '_ \| | | |
+ | |_) | | | | (_) | | | | (_) || |_) | |_| |
+ | .__/|_| |_|\___/|_| |_|\___(_) .__/ \__, |
+ |_|                            |_|    |___/
+                                      2.20.0
+
+Compiled with OpenMP support (max 32 threads).
+Python version 3.11.6
+Spglib version 2.1.0
+
+Calculator interface: qe
+Displacements were read from "phonopy_disp.yaml".
+1. Drift force of "001/gaas-001.scf.out" to be subtracted
+  0.00000000  -0.00000000  -0.00000000
+2. Drift force of "002/gaas-002.scf.out" to be subtracted
+  0.00000000   0.00000000   0.00000000
+"FORCE_SETS" has been created.
+                 _
+   ___ _ __   __| |
+  / _ \ '_ \ / _` |
+ |  __/ | | | (_| |
+  \___|_| |_|\__,_|
+
+/home/saito/anaconda3/envs/phonopy/lib/python3.11/site-packages/phonopy/cui/phonopy_script.py:1340: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+  plot.show()
+        _
+  _ __ | |__   ___  _ __   ___   _ __  _   _
+ | '_ \| '_ \ / _ \| '_ \ / _ \ | '_ \| | | |
+ | |_) | | | | (_) | | | | (_) || |_) | |_| |
+ | .__/|_| |_|\___/|_| |_|\___(_) .__/ \__, |
+ |_|                            |_|    |___/
+                                      2.20.0
+
+Compiled with OpenMP support (max 32 threads).
+Python version 3.11.6
+Spglib version 2.1.0
+
+"band.conf" was read as phonopy configuration file.
+Calculator interface: qe
+Crystal structure was read from "phonopy_disp.yaml".
+Unit of length: au
+Band structure and mesh sampling mode
+Settings:
+  Sampling mesh: [3 3 3]
+  Supercell: [3 3 3]
+  Primitive matrix (Auto):
+    [ 0.  0. -1.]
+    [-1.  0.  0.]
+    [1. 1. 1.]
+Spacegroup: F-43m (216)
+Use -v option to watch primitive cell, unit cell, and supercell structures.
+
+Force sets were not found in "phonopy_disp.yaml".
+Forces and displacements were read from "FORCE_SETS".
+Computing force constants...
+Max drift of force constants: -0.000992 (yy) -0.000000 (xx)
+
+SeeK-path is used to generate band paths.
+  About SeeK-path https://seekpath.readthedocs.io/ (citation there-in)
+Reciprocal space paths in reduced coordinates:
+[ 0.000  0.000  0.000] --> [ 0.500  0.000  0.500]
+[ 0.500  0.000  0.500] --> [ 0.625  0.250  0.625]
+[ 0.375  0.375  0.750] --> [ 0.000  0.000  0.000]
+[ 0.000  0.000  0.000] --> [ 0.500  0.500  0.500]
+[ 0.500  0.500  0.500] --> [ 0.500  0.250  0.750]
+[ 0.500  0.250  0.750] --> [ 0.500  0.000  0.500]
+Mesh numbers: [3 3 3]
+Number of irreducible q-points on sampling mesh: 4/27
+Calculating phonons on sampling mesh...
+Calculating DOS...
+
+Summary of calculation was written in "phonopy.yaml".
+                 _
+   ___ _ __   __| |
+  / _ \ '_ \ / _` |
+ |  __/ | | | (_| |
+  \___|_| |_|\__,_|
+
+* --- lumin.py --- *
+*** JOB Start at 2024/03/21 23:59:37.
+*
+* --- check parameters --- *
+*** system parameters ***
+* mat:  gaas
+* sw_run_emod:  False
+* sw_run_ccd:  False
+* sw_run_ph:  True
+* nc:  20
+* exe:  $HOME/qe7.2/bin
+*
+*** phonon parameters ***
+* ndim:  [3 3 3]
+* emin_ph:  0.0
+* emax_ph:  1.0
+* sigma:  0.006
+* sw_HR:  none
+* sw_phrun:  True
+*
+* --- Finish check parameters --- *
+* --- Class Phonon --- *
+* --- Phonon calculation --- *
+* --- Finish phonon calculation --- *
+*
+* --- Finish Class Phonon --- *
+*
+* --- All calculations are finished! --- *
+* Computation time: 5.63209080696106 (sec)
+*

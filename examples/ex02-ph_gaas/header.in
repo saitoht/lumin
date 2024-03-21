@@ -9,8 +9,7 @@
 /
 &system
  ibrav = 0,
- celldm(1) = 10.6839445908,
- nat = 2,
+ nat = 54,
  ntyp = 2,
  ecutwfc = 80.0,
  ecutrho = 400.0,
@@ -20,6 +19,7 @@
  degauss = 0.005
 /
 &electrons
+ electron_maxstep = 200
  mixing_beta = 0.3
  conv_thr = 1.0d-8
 /
@@ -27,15 +27,5 @@
 /
 &cell
 /
-ATOMIC_SPECIES
-Ga  69.723     Ga.pbesol-dn-kjpaw_psl.1.0.0.UPF
-As  74.9216    As.pbesol-n-kjpaw_psl.1.0.0.UPF
-ATOMIC_POSITIONS crystal
-Ga           0.000000   0.000000   0.000000
-As           0.250000   0.250000   0.250000
 K_POINTS automatic
-12 12 12 0 0 0
-CELL_PARAMETERS alat
- 0.0 0.5 0.5
- 0.5 0.0 0.5
- 0.5 0.5 0.0
+4 4 4 0 0 0

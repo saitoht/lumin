@@ -266,8 +266,6 @@ class ccd:
             sys.exit()
             
         mass:float = [prms.ELEMS_MASS[ele]*prms.uatm/prms.me for ele in elements_g]
-        alat_g = alat_g / prms.Bohr
-        alat_e = alat_e / prms.Bohr
         pos_g = alat_g * np.dot( pos_g, plat_g )
         pos_e = alat_e * np.dot( pos_e, plat_e )
         deltaQ_sq:float = 0.0
@@ -280,8 +278,8 @@ class ccd:
                 deltaR_sq += sum([(pos_e[count,k]-pos_g[count,k])**2. for k in range(3)])
                 dQvec_sq[:] += mass[i] * (pos_e[count,:]-pos_g[count,:])**2.
                 count += 1
-        self.deltaQ:float = np.sqrt(prms.me/prms.uatm)*prms.Bohr * np.sqrt(deltaQ_sq)
-        self.dQvec:float = np.sqrt(prms.me/prms.uatm)*prms.Bohr * np.array([np.sqrt(dQvec_sq[i]) for i in range(3)])
+        self.deltaQ:float = np.sqrt(prms.me/prms.uatm) * prms.Bohr * np.sqrt(deltaQ_sq)
+        self.dQvec:float = np.sqrt(prms.me/prms.uatm) * prms.Bohr * np.array([np.sqrt(dQvec_sq[i]) for i in range(3)])
         self.deltaR:float = prms.Bohr * np.sqrt(deltaR_sq)
         self.M:float = deltaQ_sq / deltaR_sq
 
