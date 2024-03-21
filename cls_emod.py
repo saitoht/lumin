@@ -12,7 +12,7 @@ class emod:
     """ Class: calculate the elastic moduli using first-principles codes """
     ### ----------------------------------------------------------------------------- ###
     def __init__(self):
-        """ Constructor of reading parameters from input file """
+        """ Constructor of emod """
         
         print("* --- Start Elastic Moduli calculation--- *")
         print("*")
@@ -207,9 +207,9 @@ class emod:
             E20:float = emod.Emod_fit(self, para, sym)
             E2:float = E20[2]
 
-            self.C11:float = prms.AU2GPa * (6.*E1 + 9.*self.Bmod)/9.
-            self.C12:float = prms.AU2GPa * (9.*self.Bmod - 3.*E1)/9.
-            self.C44:float = prms.AU2GPa * 0.5*E2
+            self.C11:float = prms.AU2GPa * 2. * E1/3. + self.Bmod
+            self.C12:float = - prms.AU2GPa * 1. * E1/3. + self.Bmod
+            self.C44:float = prms.AU2GPa * 0.5 * E2
             Econst:float = np.array([self.C11, self.C12, self.C44])
             Cp:float = 0.5*(self.C11-self.C12)
             Cpp:float = self.C12 - self.C44
@@ -222,6 +222,7 @@ class emod:
             Aniso:float = 2.*self.C44 / (self.C11-self.C12)
             lamd:float = self.Ymod * self.nu / ((1.+self.nu)*(1.-2.*self.nu))
             mu:float = 0.5 * self.Ymod / (1.+self.nu)
+            print("* Calculated values by DFT *")
             print("* C11 (GPa): ", self.C11)
             print("* C12 (GPa): ", self.C12)
             print("* C44 (GPa): ", self.C44)
@@ -297,6 +298,7 @@ class emod:
             self.Gmod:float = 0.5*(GV+GR)
             self.Ymod:float = 9.*self.Bmod*self.Gmod/(3.*self.Bmod+self.Gmod)
             self.nu:float = 0.5*(1.-self.Ymod/(3.*self.Bmod))
+            print("* Calculated values by DFT *")
             print("* C11 (GPa): ", self.C11)
             print("* C12 (GPa): ", self.C12)
             print("* C13 (GPa): ", self.C13)
@@ -364,6 +366,7 @@ class emod:
             self.Gmod:float = 0.5*(GV+GR)
             self.Ymod:float = 9.*self.Bmod*self.Gmod/(3.*self.Bmod+self.Gmod)
             self.nu:float = 0.5*(1.-self.Ymod/(3.*self.Bmod))
+            print("* Calculated values by DFT *")
             print("* C11 (GPa): ", self.C11)
             print("* C12 (GPa): ", self.C12)
             print("* C33 (GPa): ", self.C33)
@@ -441,6 +444,7 @@ class emod:
             self.C12:float = prms.AU2GPa * (E7 - E1 - E2)
             self.C13:float = prms.AU2GPa * (E8 - E1 - E3)
             Econst:float = np.array([self.C11,self.C12,self.C13,self.C22,self.C33,self.C44,self.C55,self.C66])
+            print("* Calculated values by DFT *")
             print("* C11 (GPa): ", self.C11)
             print("* C22 (GPa): ", self.C22)
             print("* C33 (GPa): ", self.C33)
@@ -460,8 +464,8 @@ class emod:
     def calc_Debye_temp(self):
         """ calculate Debye temperature """
         
-        """ See H. Alipour, A. Hamedani, & G. Alahyarizadeh, First-principles calculations to investigate the thermal response
-                of the ZrC(1-x)Nx ceramics at extreme conditions, High Temp. Mater. Proc. 42 (2023) 20220241. """
+        """ See Y. Zhou, A. M. Tehrani, A. O. Oliynyk, A. C. Duke, & J. Brogch, Identifying an efficient,
+                thermally robust inorganic phosphor host via machine learning, Nature Commn. 9 (2018) 4377. """
         (alat, plat, elements, nelems, natm, pos, Vol) = prms.get_POSCAR("POSCAR0")
         Mass_ele:float = [prms.ELEMS_MASS[ele] for ele in elements]
         Mass:float = sum([Mass_ele[i] for i, ne in enumerate(nelems) for j in range(ne)])

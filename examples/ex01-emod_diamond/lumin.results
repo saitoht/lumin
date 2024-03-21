@@ -1,0 +1,92 @@
+* --- lumin.py --- *
+*** JOB Start at 2024/03/21 09:01:31.
+*
+* --- check parameters --- *
+*** system parameters ***
+* mat:  c_dia
+* sw_run_emod:  True
+* sw_run_ccd:  False
+* sw_run_ph:  False
+* nc:  20
+* exe:  $HOME/qe7.2/bin
+*
+*** elastic moduli parameters ***
+* brav:  cub
+* sw_plt_emod:  False
+* dratio:  0.02
+* ndiv_emod:  15
+*
+* --- Finish check parameters --- *
+* --- Start Elastic Moduli calculation--- *
+*
+*** Bulk modulus ***
+*** First-principles for Bulk Modulus ***
+*
+* Optimized values
+(array([-1.16596297e-05,  3.07829760e+02,  2.94912067e-02,  3.69760897e+00]), array([[ 3.34276999e-12, -1.06649831e-09, -1.19223858e-11,
+         1.47406609e-08],
+       [-1.06649831e-09,  5.55935066e-06,  7.82211101e-09,
+        -3.73338238e-05],
+       [-1.19223858e-11,  7.82211101e-09,  7.71330820e-11,
+        -1.18072502e-07],
+       [ 1.47406609e-08, -3.73338238e-05, -1.18072502e-07,
+         3.52142110e-04]]))
+* parameters Bmod = [E0, V0, B0, B0p]
+[-1.16596297e-05  3.07829760e+02  2.94912067e-02  3.69760897e+00]
+* R2:  0.9999996993325813
+*
+* Bulk modulus by fitting BM_eq (GPa):  433.83078725145606
+*
+*** Cubic system ***
+* There are 3 independent elastic constants: 
+* C11, C12, C44
+*** First-principles for Elastic Moduli cub-uni ***
+*
+* Optimized values
+(array([-1.87184245e-09, -2.45993103e-10,  6.36301978e-02]), array([[ 6.38418394e-19, -1.26905051e-19, -2.34159339e-15],
+       [-1.26905051e-19,  1.82799399e-15,  1.54923159e-15],
+       [-2.34159339e-15,  1.54923159e-15,  1.53673439e-11]]))
+* parameters cub-uni = [0th, 1st, 2nd]
+[-1.87184245e-09 -2.45993103e-10  6.36301978e-02]
+* R2:  0.999999954457772
+*
+*** First-principles for Elastic Moduli cub-xy ***
+*
+* Optimized values
+(array([-4.73025221e-09,  1.64223735e-10,  7.82611652e-02]), array([[ 2.35738307e-18, -3.90217739e-19, -8.64608310e-15],
+       [-3.90217739e-19,  7.15719425e-15,  3.92786482e-16],
+       [-8.64608310e-15,  3.92786482e-16,  5.67398608e-11]]))
+* parameters cub-xy = [0th, 1st, 2nd]
+[-4.73025221e-09  1.64223735e-10  7.82611652e-02]
+* R2:  0.9999998888334496
+*
+* C11 (GPa):  6382497.562645934
+* C12 (GPa):  6381561.529778538
+* C44 (GPa):  575.6309533500666
+* Bulk modulus (GPa):  433.83078725145606
+* C'=0.5(C11-C12) (GPa):  468.0164336976595
+* C''=C12-C44 (GPa):  6380985.898825188
+* Voigt Shear modulus (GPa):  532.5851454891039
+* Young modulus (GPa):  1133.7942307787516
+* Poisson ratio nu:  0.06442532276930352
+* Kleinman parameter zeta:  0.9999022260105584
+* Reuss shear modulus (GPa):  527.1466447829514
+* Hill shear modulus (GPa):  529.8658951360276
+* Anisotropy constatn:  1.229937480618312
+* Lames coefficient lambda:  78.77402359205352
+* Lames coefficient mu:  532.5851454891039
+*
+* calc_Debye_temp *
+* n:  8.0
+* Mass:  96.08479999999999
+* rho (kg/m^3):  3534.1209818306475
+* longitudinal velocity (m/s):  17962.732686115254
+* transverse velocity (m/s):  12244.534445884416
+* mean velocity (m/s):  13346.169142027886
+* Debye temperature (K):  2231.802126003265
+*
+* --- Finish Elastic Moduli calculation--- *
+*
+* --- All calculations are finished! --- *
+* Computation time: 493.8914284706116 (sec)
+*
