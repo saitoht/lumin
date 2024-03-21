@@ -14,9 +14,9 @@ class ccd:
         
         print("* --- Start calculation of configuration coordinate model--- *")
         if ( prms.sw_unit in {"eV","nm"} ):
-            unit:float = 1.0
+            self.unit:float = 1.0
         elif ( prms.sw_unit == "cm^-1" ):
-            unit:float = prms.eV2cm
+            self.unit:float = prms.eV2cm
         ccd.get_Stokes(self)
         ccd.get_DeltaQ(self)
         if ( prms.sw_eg ):
@@ -30,18 +30,18 @@ class ccd:
 
         print("*** check the parameters in ccd ***")
         if ( prms.sw_unit in {"eV","cm^-1"} ):
-            print("* Absorption energy ({sunit}): ".format(sunit=prms.sw_unit), prms.Eabs0*unit)
-            print("* Emission energy ({sunit}): ".format(sunit=prms.sw_unit), prms.Eem0*unit)
-            print("* EFCg = Ee - Eg ({sunit}): ".format(sunit=prms.sw_unit), prms.EFCg*unit)
-            print("* EFCe = Eg* - Ee* ({sunit}): ".format(sunit=prms.sw_unit), self.EFCe*unit)
-            print("* Stokes shift (@ 0K) ({sunit}): ".format(sunit=prms.sw_unit), self.deltaS*unit)
-            print("* Zero phonon photoemission line ({sunit}): ".format(sunit=prms.sw_unit), self.EZPL*unit)
-            print("* FWHM (@ 0K) ({sunit}): ".format(sunit=prms.sw_unit), self.W0*unit)
+            print("* Absorption energy ({sunit}): ".format(sunit=prms.sw_unit), prms.Eabs0*self.unit)
+            print("* Emission energy ({sunit}): ".format(sunit=prms.sw_unit), prms.Eem0*self.unit)
+            print("* EFCg = Ee - Eg ({sunit}): ".format(sunit=prms.sw_unit), prms.EFCg*self.unit)
+            print("* EFCe = Eg* - Ee* ({sunit}): ".format(sunit=prms.sw_unit), self.EFCe*self.unit)
+            print("* Stokes shift (@ 0K) ({sunit}): ".format(sunit=prms.sw_unit), self.deltaS*self.unit)
+            print("* Zero phonon photoemission line ({sunit}): ".format(sunit=prms.sw_unit), self.EZPL*self.unit)
+            print("* FWHM (@ 0K) ({sunit}): ".format(sunit=prms.sw_unit), self.W0*self.unit)
             print("* DeltaR (ang): ", self.deltaR)
             print("* DeltaQ (sqrt(amu)*ang): ", self.deltaQ)
             print("* DeltaQ[1:3]: ", self.dQvec)
-            print("* hbar*Omegag ({sunit}): ".format(sunit=prms.sw_unit), self.Omegag*unit)
-            print("* hbar*Omegae ({sunit}): ".format(sunit=prms.sw_unit), self.Omegae*unit)
+            print("* hbar*Omegag ({sunit}): ".format(sunit=prms.sw_unit), self.Omegag*self.unit)
+            print("* hbar*Omegae ({sunit}): ".format(sunit=prms.sw_unit), self.Omegae*self.unit)
         elif ( prms.sw_unit == "nm" ):
             print("* Absorption energy (nm): ", prms.E2lambda(prms.Eabs0))
             print("* Emission energy (nm): ", prms.E2lambda(prms.Eem0))
@@ -97,43 +97,43 @@ class ccd:
         plt.axhline(0, lw=0.5, c="black", linestyle="dashed")
         if ( prms.sw_unit in {"eV","cm^-1"} ):
             plt.xlabel("Energy ({sunit})".format(sunit=prms.sw_unit))
-            plt.plot(unit*energy, self.Labs, lw=1.0, c="black")
-            plt.scatter(prms.Eabs0*unit,0.0,c="black",s=size,marker="o")
-            plt.plot(unit*energy, self.Lem, lw=1.0, c="red")
-            plt.scatter(prms.Eem0*unit,0.0,c="red",s=size,marker="o")
+            plt.plot(self.unit*self.energy, self.Labs, lw=1.0, c="black")
+            plt.scatter(prms.Eabs0*self.unit,0.0,c="black",s=size,marker="o")
+            plt.plot(self.unit*self.energy, self.Lem, lw=1.0, c="red")
+            plt.scatter(prms.Eem0*self.unit,0.0,c="red",s=size,marker="o")
         elif ( prms.sw_unit == "nm" ):
             plt.xlabel("Wave length (nm)")
-            plt.plot(prms.E2lambda(energy), self.Labs, lw=1.0, c="black")
-            plt.plot(prms.E2lambda(energy), self.Lem, lw=1.0, c="red")
-            plt.savefig("Spectrum.pdf")
-            plt.show()
+            plt.plot(prms.E2lambda(self.energy), self.Labs, lw=1.0, c="black")
+            plt.plot(prms.E2lambda(self.energy), self.Lem, lw=1.0, c="red")
+        plt.savefig("Spectrum.pdf")
+        plt.show()
                 
         print("*** PLOT TEMPERATURE DEPENDENCE OF E_EM & E_ABS ***")
         plt.xlabel("Temperature (K)")
         plt.ylabel("Emission energy ({sunit})".format(sunit=prms.sw_unit))
         if ( prms.sw_unit in {"eV","cm^-1"} ):
-            plt.plot(self.temp, unit*self.Eabs, lw=1.0, c="black")
-            plt.plot(self.temp, unit*self.Eem, lw=1.0, c="red")
+            plt.plot(self.temp, self.unit*self.Eabs, lw=1.0, c="black")
+            plt.plot(self.temp, self.unit*self.Eem, lw=1.0, c="red")
         elif ( prms.sw_unit == "nm" ):
             plt.plot(self.temp, prms.E2lambda(self.Eabs), lw=1.0, c="black")
             plt.plot(self.temp, prms.E2lambda(self.Eem), lw=1.0, c="red")
-            plt.savefig("Epeak_Temp.pdf")
-            plt.show()
+        plt.savefig("Epeak_Temp.pdf")
+        plt.show()
                 
         print("*** PLOT TEMPERATURE DEPENDENCE OF STOKES SHIFT ***")
         plt.xlabel("Temperature (K)")
         plt.ylabel("Stokes shift ({sunit})".format(sunit=prms.sw_unit))
         if ( prms.sw_unit in {"eV","cm^-1"} ):
-            plt.plot(self.temp, unit*(self.Eabs-self.Eem), lw=1.0, c="black")
+            plt.plot(self.temp, self.unit*(self.Eabs-self.Eem), lw=1.0, c="black")
         elif ( prms.sw_unit == "nm" ):
             plt.plot(self.temp, prms.E2lambda(self.Eabs)-prms.E2lambda(self.Eem), lw=1.0, c="black")
-            plt.savefig("Stokes_Temp.pdf")
-            plt.show()
+        plt.savefig("Stokes_Temp.pdf")
+        plt.show()
                 
         print("*** PLOT TEMPERATURE DEPENDENCE OF FWHM ***")
         plt.xlabel("Temperature (K)")
         plt.ylabel("FWHM ({sunit})".format(sunit=prms.sw_unit))
-        plt.plot(self.temp, unit*self.W, lw=1.0, c="black")
+        plt.plot(self.temp, self.unit*self.W, lw=1.0, c="black")
         plt.savefig("FWHM_Temp.pdf")
         plt.show()
             
@@ -254,10 +254,10 @@ class ccd:
         pg = pathlib.Path("POSCAR_"+prms.stateg)
         pe = pathlib.Path("POSCAR_"+prms.statee)
         if ( not pg.exists() ):
-            print("*** ERROR in ccd.get_DeltaQ: POSCAR_g doesn't exist!!!")
+            print("*** ERROR in ccd.get_DeltaQ: POSCAR_{sym} doesn't exist!!!".format(sym=prms.stateg))
             sys.exit()
         if ( not pe.exists() ):
-            print("*** ERROR in ccd.get_DeltaQ: POSCAR_e doesn't exist!!!")
+            print("*** ERROR in ccd.get_DeltaQ: POSCAR_{sym} doesn't exist!!!".format(sym=prms.statee))
             sys.exit()
         (alat_g, plat_g, elements_g, nelems_g, natm_g, pos_g, volume) = prms.get_POSCAR("POSCAR_"+prms.stateg)
         (alat_e, plat_e, elements_e, nelems_e, natm_e, pos_e, volume) = prms.get_POSCAR("POSCAR_"+prms.statee)
@@ -305,8 +305,8 @@ class ccd:
         for n in range(prms.nmax):
             self.Lem[:] += ( np.exp(-self.Sem)*self.Sem**float(n) / float(np.math.factorial(n)) ) * prms.Lorentzian(self.EZPL - float(n)*self.Omegag - self.energy[:])
             self.Labs[:] += ( np.exp(-self.Sabs)*self.Sabs**float(n) / float(np.math.factorial(n)) ) * prms.Lorentzian(self.EZPL + float(n)*self.Omegae - self.energy[:])
-        self.Lem = self.I0 * self.Lem / max(self.Lem)
-        self.Labs = self.I0 * self.Labs / max(self.Labs)
+        self.Lem = prms.I0 * self.Lem / max(self.Lem)
+        self.Labs = prms.I0 * self.Labs / max(self.Labs)
 
     ### ----------------------------------------------------------------------------- ###
     def calc_Ecenter_shift(self):
@@ -321,7 +321,7 @@ class ccd:
     def calc_FWHM(self):
         """ Full width half maximum of transitions and its temperature dependence """
         
-        self.temp:float = np.linspace(self.tempmin, self.tempmax, prms.ndiv_temp)
+        self.temp:float = np.linspace(prms.tempmin, prms.tempmax, prms.ndiv_temp)
         self.W0:float = self.Sem * self.Omegag * np.sqrt(8.0*np.log(2.)) / np.sqrt(self.Sabs)
         if ( prms.sw_unit == "nm" ):
             W0min:float = prms.Eem0 - 0.5*self.W0

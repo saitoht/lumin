@@ -1,0 +1,59 @@
+* --- lumin.py --- *
+*** JOB Start at 2024/03/21 15:06:09.
+*
+* --- check parameters --- *
+*** system parameters ***
+* mat:  al2o3_cr
+* sw_run_emod:  False
+* sw_run_ccd:  True
+* sw_run_ph:  False
+* nc:  20
+* exe:  $HOME/qe7.2/bin
+*
+*** configuration coordinate diagram parameters ***
+* Eabs0 (eV):  2.146
+* Eem0 (eV):  1.702
+* EFCg (eV):  0.214
+* dQ (eV):  1.0
+* I0:  1.0
+* gamma:  1e-05
+* sw_plt_ccd:  True
+* sw_eg:  False
+* sw_unit:  eV
+* stateg:  4A2g
+* statee:  4T2g
+* emin_ccd (eV):  1.0
+* emax_ccd (eV):  3.0
+* tempmin (K):  1.0
+* tempmax (K):  1000.0
+* nmax:  30
+* ndiv_e:  1000000
+* ndiv_temp:  1000
+* ndiv_eg:  12
+*
+* --- Finish check parameters --- *
+* --- Start calculation of configuration coordinate model--- *
+*** check the parameters in ccd ***
+* Absorption energy (eV):  2.146
+* Emission energy (eV):  1.702
+* EFCg = Ee - Eg (eV):  0.214
+* EFCe = Eg* - Ee* (eV):  0.22999999999999995
+* Stokes shift (@ 0K) (eV):  0.44399999999999995
+* Zero phonon photoemission line (eV):  1.916
+* FWHM (@ 0K) (eV):  0.15283756078543323
+* DeltaR (ang):  0.3330718390413132
+* DeltaQ (sqrt(amu)*ang):  2.0726700580948507
+* DeltaQ[1:3]:  [1.65536094 0.97867589 0.77326246]
+* hbar*Omegag (eV):  0.020407415448910404
+* hbar*Omegae (eV):  0.021156559180434447
+* Sabs:  10.871333000722707
+* Sem:  10.48638425261372
+*
+*** PLOT LINE SHAPE ***
+*** PLOT TEMPERATURE DEPENDENCE OF E_EM & E_ABS ***
+*** PLOT TEMPERATURE DEPENDENCE OF STOKES SHIFT ***
+*** PLOT TEMPERATURE DEPENDENCE OF FWHM ***
+* --- FINISH CALCULATIONS OF STOKES SHIFT--- *
+* --- All calculations are finished! --- *
+* Computation time: 21.121574640274048 (sec)
+*
