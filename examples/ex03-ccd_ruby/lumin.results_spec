@@ -1,5 +1,5 @@
 * --- lumin.py --- *
-*** JOB Start at 2024/03/21 17:05:52.
+*** JOB Start at 2024/03/22 09:29:53.
 *
 * --- check parameters --- *
 *** system parameters ***
@@ -49,11 +49,12 @@
 * Sabs:  5.75286167612015
 * Sem:  5.549155571255238
 *
+*** PLOT 1D-CCD ***
 *** PLOT LINE SHAPE ***
 *** PLOT TEMPERATURE DEPENDENCE OF E_EM & E_ABS ***
 *** PLOT TEMPERATURE DEPENDENCE OF STOKES SHIFT ***
 *** PLOT TEMPERATURE DEPENDENCE OF FWHM ***
 * --- FINISH CALCULATIONS OF STOKES SHIFT--- *
 * --- All calculations are finished! --- *
-* Computation time: 19.0962016582489 (sec)
+* Computation time: 22.131636381149292 (sec)
 *

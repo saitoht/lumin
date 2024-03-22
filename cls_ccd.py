@@ -72,6 +72,12 @@ class ccd:
     def plt_ccd(self):
         """ plot the results of configuration coordinate model """
 
+        def Eg(x,x0,y0):
+            return (y0/(x0**2.)) * (x**2.)
+
+        def Ee(x,x0,y0,y1):
+            return ((y1-y0)/(x0**2.)) * ((x-x0)**2.) + y0
+
         plt.rcParams['font.family'] = 'Helvetica'
         plt.rcParams["xtick.labelsize"] = 15.0
         plt.rcParams["ytick.labelsize"] = 15.0
@@ -90,6 +96,29 @@ class ccd:
         plt.rcParams["ytick.major.size"] = 4.5
         plt.rcParams["xtick.minor.size"] = 3.0
         plt.rcParams["ytick.minor.size"] = 3.0
+
+        print("*** PLOT 1D-CCD ***")
+        xQ:float = np.linspace(-0.5*self.deltaQ,1.5*self.deltaQ,1000)
+        yEg:float = Eg(xQ,self.deltaQ,prms.EFCg)
+        yEe:float = Ee(xQ,self.deltaQ,prms.EFCg+prms.Eem0,prms.Eabs0)
+        Qarr:float = [0.0, 0.0, self.deltaQ, self.deltaQ]
+        Earr:float = [0.0, prms.Eabs0, prms.EFCg, prms.EFCg+prms.Eem0]
+        plt.figure(figsize=(6,6.5))
+        plt.xlim(-0.5*self.deltaQ,1.5*self.deltaQ)
+        plt.ylim(-0.1, prms.emax_ccd)
+        plt.xlabel(r"$\Delta Q$ (amu$^{1/2}\cdot\mathrm{\AA}$)")
+        plt.ylabel("Energy (eV)")
+        plt.scatter(Qarr, Earr, color="white", marker="o", edgecolor="mediumblue", s=80)
+        plt.plot(xQ,yEg,color="red",lw=1.0)
+        plt.plot(xQ,yEe,color="red",lw=1.0)
+        plt.plot([0.0,0.0],[-0.1,prms.Eabs0],color="black",linestyle="dotted",lw=0.5)
+        plt.plot([self.deltaQ,self.deltaQ],[-0.1,prms.EFCg+prms.Eem0],color="black",linestyle="dotted",lw=0.5)
+        plt.plot([-0.5*self.deltaQ,self.deltaQ],[prms.EFCg+prms.Eem0,prms.EFCg+prms.Eem0],color="black",linestyle="dotted",lw=0.5)
+        plt.plot([-0.5*self.deltaQ,self.deltaQ],[prms.EFCg,prms.EFCg],color="black",linestyle="dotted",lw=0.5)
+        plt.plot([-0.5*self.deltaQ,1.5*self.deltaQ],[0.0,0.0],color="black",linestyle="dotted",lw=0.5)
+        plt.plot([-0.5*self.deltaQ,0.0],[prms.Eabs0,prms.Eabs0],color="black",linestyle="dotted",lw=0.5)
+        plt.savefig("1DCCD_{state}.pdf".format(state=prms.statee))
+        plt.show()
         
         print("*** PLOT LINE SHAPE ***")
         size:int = 30
