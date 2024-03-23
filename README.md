@@ -58,12 +58,16 @@ See examples directory
 - Ex01: Elastic Moduli of Diamond
 - Ex02: Phonon Calculation of GaAs
 - Ex03: Configuration Coordinate Model of Ruby
+- Ex04: Elastic Moduli of TiB2
+- Ex05: Multi-D CCD model from Phonon spectrum
+- Ex06: Anharmonic effects in 1D-CCD model
 
 ## References
 For elastic moduli calculations
-- M. Jamal, S. J. Asadabadi, I. Ahmad, H. A. R. Aliabad, Elastic constants of cubic crystals, Computational Materials Science 95 (2014) 592-599
+- M. Jamal, S. J. Asadabadi, I. Ahmad, H. A. R. Aliabad, Elastic constants of cubic crystals, Computational Materials Science 95 (2014) 592-599.
 - A. H. Reshak, M. Jamal, DFT Calculation for Elastic Constants of Tetragonal Strucrure of Crystalline Solids with WIEN2k Code: A New Package (Tetra-elastic), Int. J. Electrochem. Sci., 8 (2013) 12252.
-- Z. Zhang, Z. H. Fu, R. F. Zhang, D. Legut, and H. B. Guo, Anomalous mechanical strengths and shear deformation paths of Al2O3 polymorphs with high ionicity, RCS Advances
+- Z. Zhang, Z. H. Fu, R. F. Zhang, D. Legut, and H. B. Guo, Anomalous mechanical strengths and shear deformation paths of Al2O3 polymorphs with high ionicity, RCS Advances.
+- K. B. Panda, K. S. Ravi Chamdram, Determination of elastic constants of titanium diboride from first principles using FLAPW implementation of the density functional theory, Comp. Mater. Sci. (2006) 134.
 - Y. Zhou, A. M. Tehrani, A. O. Oliynyk, A. C. Duke, & J. Brogch, Identifying an efficient, thermally robust inorganic phosphor host via machine learning, Nature Commn. 9 (2018) 4377.
 
 For phonon calculations

@@ -16,9 +16,22 @@ If you can use a cluster machine, run the following command.
 qsub job.sh
 ```
 
-## Results
+In order to see the results of fitting
+```shell-session
+lumin -emod -p
+```
 
-| Method | $ C_{11} $  | $ C_{12} $ | $ C_{44} $ |  $B$  |  $G$  |  $E$   | $ \Theta_D $ |
+## Results
+Output file
+- lumin.results
+
+| Method | ${ C_{11} }$ (GPa)  | ${ C_{12} }$ (GPa) | ${ C_{44} }$ (GPa) |  ${B}$ (GPa)  |  ${G}$ (GPa)  |  ${E}$ (GPa)  | ${ \Theta_D }$ (K) |
 | ----   | ----        | ----       | ----       | ----  | ----  | ----   | ----         |
-| DFT    | 1057 | 122 | 576 | 434 | 530 | 1134 | 2232    |
+| DFT    | 1072 | 136 | 576 | 448 | 530 | 1145 | 2234    |
 | Expt.  | 1077 | 125 | 577 | 442 | 534 | 1146 | 1883    |
+
+Figures
+- Bmod_fit.pdf
+- cub-uni_fit.pdf
+- cub-xy_fit.pdf
+- cub-vol_fit.pdf

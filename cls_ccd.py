@@ -171,8 +171,8 @@ class ccd:
         """ calculate total enegies of intermediate states """
         
         print("* --- gernerate POSCAR in between ground & excited states --- *")
-        (alat_g,plat_g,elements_g,nelems_g,natm_g,pos_g) = prms.get_POSCAR("POSCAR_"+prms.stateg)
-        (alat_e,plat_e,elements_e,nelems_e,natm_e,pos_e) = prms.get_POSCAR("POSCAR_"+prms.statee)
+        (alat_g,plat_g,elements_g,nelems_g,natm_g,pos_g,volume) = prms.get_POSCAR("POSCAR_"+prms.stateg)
+        (alat_e,plat_e,elements_e,nelems_e,natm_e,pos_e,volume) = prms.get_POSCAR("POSCAR_"+prms.statee)
         Qarr:float = np.linspace(-prms.dQ, 1.+prms.dQ, prms.ndiv_eg)
         for i, Q in enumerate(Qarr):
             Rmid:float = np.zeros((len(pos_g),3))
@@ -201,7 +201,7 @@ class ccd:
                 sub.run(["mkdir -p {ndir}/{state}".format(ndir=ndir, state=state)], shell=True)
                 os.chdir("{ndir}/{state}".format(ndir=ndir, state=state))
                 sub.run(["cp ../../header_{state}.in {mat}-eg{ic}.scf.in".format(state=state, mat=prms.mat, ic=i+1)], shell=True)
-                (alat, plat, elements, nelems, natm, pos) = prms.get_POSCAR("../../POSCAR_eg{ic}".format(ic=i+1))
+                (alat, plat, elements, nelems, natm, pos, volume) = prms.get_POSCAR("../../POSCAR_eg{ic}".format(ic=i+1))
                 ic: int = 0
                 string: str = ""
                 for j, nele in enumerate(nelems):

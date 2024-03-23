@@ -14,14 +14,14 @@ class ph:
 
         print("* --- Class Phonon --- *")
         if ( prms.sw_phrun ):
-            ph.phonon(self)
+            ph.fz_phonon(self)
         if ( not prms.sw_HR == "none" ):
             ph.Huang_Rhys(self)
         print("* --- Finish Class Phonon --- *")
         print("*")
 
     ### ----------------------------------------------------------------------------- ###
-    def phonon(self):
+    def fz_phonon(self):
         """ Frozen phonon calculation """
         
         print("* --- Phonon calculation --- *")
@@ -54,6 +54,12 @@ class ph:
         print("*")
 
     ### ----------------------------------------------------------------------------- ###
+    def dfpt_phonon(self):
+        """ Phonon spectrum by DFPT method """
+
+        pass
+        
+    ### ----------------------------------------------------------------------------- ###
     def Huang_Rhys(self):
         """ obtain Huang_Rhys parameter decomposed by phonon mode """
         
@@ -83,15 +89,15 @@ class ph:
         for i, nel in enumerate(nelems):
             for j in range(nel):
                 mass.append(prms.ELEMS_MASS[elements[i]]*prms.uatm/prms.me)
-        if ( sw_qk in {"force","both"} ):
+        if ( prms.sw_HR in {"force","both"} ):
             Force_g:float = prms.get_FORCE("FORCE_"+prms.stateg)
             Force_e:float = prms.get_FORCE("FORCE_"+prms.statee)
         
         for i in range(natm):
             for j in range(3):
-                if ( prms.sw_qk in {"pos","both"} ):
+                if ( prms.sw_HR in {"pos","both"} ):
                     self.qk[:] += np.sqrt(mass[i]) * (Rpos_e[i,j]-Rpos_g[i,j]) * self.eigvecs[j,i,:].real / prms.Bohr
-                if ( prms.sw_qk in {"force","both"} ):
+                if ( prms.sw_HR in {"force","both"} ):
                     self.qk_force[:] += (1./((self.freq[:]/prms.Ry)**2.)*np.sqrt(mass[i])) * (Force_e[i,j]-Force_g[i,j]) * self.eigvecs[j,i,:].real
         self.Sk:float = np.zeros(self.nmode)
         self.Sk_force:float = np.zeros(self.nmode)
@@ -104,10 +110,10 @@ class ph:
         self.Stot:float = 0.0
         self.Stot_force:float = 0.0
         for i in range(self.nmode):
-            if ( prms.sw_qk in {"pos","both"} ):
+            if ( prms.sw_HR in {"pos","both"} ):
                 self.Sspec[:] += self.Sk[i] * prms.Gaussian(energy[:]-self.freq[i])
                 self.Stot += self.Sk[i]
-            if ( prms.sw_qk in {"force","both"} ):
+            if ( prms.sw_HR in {"force","both"} ):
                 self.Sspec_force[:] += self.Sk_force[i] * prms.Gaussian(energy[:]-self.freq[i])
                 self.Stot_force += self.Sk_force[i]
         print("* Stot from position: ", self.Stot)
@@ -123,7 +129,7 @@ class ph:
             ax2.set_ylabel(r"$\mathrm{S_k}$")
             ax2.bar(1000.*self.freq, self.Sk, color="mediumblue", width=0.15)
             plt.show()
-            if ( sw_qk in {"force","both"} ):
+            if ( sw_HR in {"force","both"} ):
                 print("* --- Plot S(hbar*omega) from force --- *")
                 fig = plt.figure()
                 ax1 = fig.add_subplot(111)

@@ -19,7 +19,8 @@ class emod:
         p = pathlib.Path("{mat}.scf_Bmod.in".format(mat=prms.mat))
         if ( p.exists() ):
             sub.run(["cp {mat}.scf_Bmod.in {mat}.scf.in0".format(mat=prms.mat)], shell=True)
-        emod.get_Bmod(self)
+        if ( prms.sw_Bmod ):
+            emod.get_Bmod(self)
         p = pathlib.Path("{mat}.scf_Emod.in".format(mat=prms.mat))
         if ( p.exists() ):
             sub.run(["cp {mat}.scf_Emod.in {mat}.scf.in0".format(mat=prms.mat)], shell=True)
@@ -107,7 +108,7 @@ class emod:
         print("*")
 
     ### ----------------------------------------------------------------------------- ###
-    def Emod_fit(self, para:float, sym:str, ndiv:int = 15):
+    def Emod_fit(self, para:float, sym:str, sw_3rd:bool = False):
         """ Fitting the elastic modulus """
 
         def BM_eq(x:float, E0:float, V0:float, B0:float, B0p:float):
@@ -118,6 +119,9 @@ class emod:
 
         def DeltaE(delta:float, coeff0:float, coeff1:float, coeff2:float):
             return coeff0 + coeff1 * delta + coeff2 * delta**2.
+
+        def DeltaE_3rd(delta:float, coeff0:float, coeff1:float, coeff2:float, coeff3:float):
+            return coeff0 + coeff1 * delta + coeff2 * delta**2. + coeff3 * delta**3.
 
         fn:str = "{sym}/DATA_{sym}".format(sym=sym)
         pf = pathlib.Path(fn)
@@ -130,9 +134,14 @@ class emod:
             cf = optimize.curve_fit(f=BM_eq, xdata=volume, ydata=tote-min(tote), p0=para)
             pm_str:str = "[E0, V0, B0, B0p]"
         else:
-            yd:float = np.array([(tote[i]-min(tote))/volume[i] for i in range(len(tote))])
-            cf = optimize.curve_fit(f=DeltaE, xdata=delta, ydata=yd, p0=para)
-            pm_str:str = "[0th, 1st, 2nd]"
+            if ( not sw_3rd ):
+                yd:float = np.array([(tote[i]-min(tote))/volume0 for i in range(len(tote))])
+                cf = optimize.curve_fit(f=DeltaE, xdata=delta, ydata=yd, p0=para)
+                pm_str:str = "[0th, 1st, 2nd]"
+            else:
+                yd:float = np.array([(tote[i]-min(tote))/volume0 for i in range(len(tote))])
+                cf = optimize.curve_fit(f=DeltaE_3rd, xdata=delta, ydata=yd, p0=para)
+                pm_str:str = "[0th, 1st, 2nd, 3rd]"
         Emod:float = cf[0]
         print("* Optimized values")
         print(cf)
@@ -140,7 +149,7 @@ class emod:
         print(Emod)
 
         if ( sym == "Bmod" ):
-            x_cont:float = np.linspace(min(volume)-1.,max(volume)+1,10*ndiv)
+            x_cont:float = np.linspace(min(volume)-1.,max(volume)+1,10*prms.ndiv_emod)
             x_plt:float = volume
             fit:float = BM_eq(x_cont, Emod[0], Emod[1], Emod[2], Emod[3])
             fit_comp:float = BM_eq(volume, Emod[0], Emod[1], Emod[2], Emod[3])
@@ -149,11 +158,18 @@ class emod:
                 plt.xlabel(r"Volume (Bohr$^3$)")
                 plt.ylabel(r"$\Delta$Energy (Ry)")
         else:
-            x_cont:float = np.linspace(min(delta)-1.e-3,max(delta)+1.e-3,10*ndiv)
-            x_plt:float = delta
-            fit:float = DeltaE(x_cont, Emod[0], Emod[1], Emod[2])
-            fit_comp:float = DeltaE(delta, Emod[0], Emod[1], Emod[2])
-            y_plt:float = np.array([(tote[i] - min(tote))/volume[i] for i in range(len(tote))])
+            if ( not sw_3rd ):
+                x_cont:float = np.linspace(min(delta)-1.e-3,max(delta)+1.e-3,10*prms.ndiv_emod)
+                x_plt:float = delta
+                fit:float = DeltaE(x_cont, Emod[0], Emod[1], Emod[2])
+                fit_comp:float = DeltaE(delta, Emod[0], Emod[1], Emod[2])
+                y_plt:float = np.array([(tote[i] - min(tote))/volume0 for i in range(len(tote))])
+            else:
+                x_cont:float = np.linspace(min(delta)-1.e-3,max(delta)+1.e-3,10*prms.ndiv_emod)
+                x_plt:float = delta
+                fit:float = DeltaE_3rd(x_cont, Emod[0], Emod[1], Emod[2], Emod[3])
+                fit_comp:float = DeltaE_3rd(delta, Emod[0], Emod[1], Emod[2], Emod[3])
+                y_plt:float = np.array([(tote[i] - min(tote))/volume0 for i in range(len(tote))])
             if ( prms.sw_plt_emod ):
                 plt.xlabel(r"Delta")
                 plt.ylabel(r"$\Delta$Energy/Volume (Ry/Bohr$^3$)")
@@ -187,6 +203,7 @@ class emod:
         """ check symmetry of the system & get elastic constants"""
 
         para:float = [0.,0.,0.1]
+        para_3rd:float = [0.,0.,0.1,0.]
         ep:float = np.linspace(-prms.dratio, prms.dratio, prms.ndiv_emod)
         if ( prms.brav == "cub" ):  # simple cubic
             """ see for example, M. Jamal, S. J. Asadabadi, I. Ahmad, H. A. R. Aliabad,
@@ -206,11 +223,18 @@ class emod:
             emod.calc_Emod(self, ep, dfmat, sym)
             E20:float = emod.Emod_fit(self, para, sym)
             E2:float = E20[2]
+            """ 1.5 * (C11 + 2*C12) """
+            sym:str = "cub-vol"
+            dfmat:float = np.array([np.diag([1.+d,1.+d,1.+d]).tolist() for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E30:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
+            E3:float = E30[2]
 
-            self.C11:float = prms.AU2GPa * 2. * E1/3. + self.Bmod
-            self.C12:float = - prms.AU2GPa * 1. * E1/3. + self.Bmod
+            self.C11:float = prms.AU2GPa * 2. * ( 3.*E1 + E3 ) / 9.
+            self.C12:float = prms.AU2GPa * ( 2.*E3 - 3.*E1 ) / 9.
             self.C44:float = prms.AU2GPa * 0.5 * E2
             Econst:float = np.array([self.C11, self.C12, self.C44])
+            self.Bmod:float = (self.C11 + 2.*self.C12) / 3.
             Cp:float = 0.5*(self.C11-self.C12)
             Cpp:float = self.C12 - self.C44
             GV:float = 0.2*(3.*self.C44 + 2.*Cp)
@@ -240,7 +264,7 @@ class emod:
             print("* Lames coefficient mu: ", mu)
             print("*")
 
-        elif ( brav == "tet" ):  # tetragonal
+        elif ( prms.brav == "tet" ):  # tetragonal
             """ See A. H. Reshak, M. Jamal, DFT Calculation for Elastic Constants of Tetragonal Strucrure of
                 Crystalline Solids with WIEN2k Code: A New Package (Tetra-elastic), Int. J. Electrochem. Sci., 8 (2013) 12252. """
             print("*** Tetragonal system ***")
@@ -315,54 +339,55 @@ class emod:
             print("* Poisson ratio nu: ", self.nu)
             print("*")
         
-        elif ( brav == "hex" ):  # simple hexagonal
+        elif ( prms.brav == "hex" ):  # simple hexagonal
             """ see for example, Z. Zhang, Z. H. Fu, R. F. Zhang, D. Legut, and H. B. Guo,
                 Anomalous mechanical strengths and shear deformation paths of Al2O3 polymorphs with high ionicity, RCS Advances """
             print("*** Hexagonal system ***")
             print("* There are 5 independent elastic constants: ")
             print("* C11, C12, C13, C33, C44")
             """ C11 + C12 """
-            sym:str = "hex-pl"
-            dfmat:float = np.array([np.diag([1.+d,1.+d,1.]).tolist() for d in ep])
+            sym:str = "hex-pp"
+            dfmat:float = np.array([np.diag([1.+d,1.+d,1./((1.+d)**2.)]).tolist() for d in ep])
             emod.calc_Emod(self, ep, dfmat, sym)
             E10:float = emod.Emod_fit(self, para, sym)
             E1:float = E10[2]
-            """ 0.25 * (C11 - C12) """
-            sym:str = "hex-xy"
-            dfmat:float = np.array([[[1.,0.5*d,0.],[0.5*d,1.,0.],[0.,0.,1.]] for d in ep])
+            """ C11 - C12 """
+            sym:str = "hex-pm"
+            dfmat:float = np.array([np.diag([1.+d,1.-d,1./(1.-d**2.)]).tolist() for d in ep])
             emod.calc_Emod(self, ep, dfmat, sym)
             E20:float = emod.Emod_fit(self, para, sym)
             E2:float = E20[2]
-            """ 0.5 * C33 """
+            """ 0.5*C33 """
             sym:str = "hex-ax"
-            dfmat:float = np.array([np.diag([1.,1.,1.+d]).tolist() for d in ep])
+            dfmat:float = np.array([np.diag([np.sqrt(1./(1.+d)),np.sqrt(1./(1.+d)),1.+d]).tolist() for d in ep])
             emod.calc_Emod(self, ep, dfmat, sym)
             E30:float = emod.Emod_fit(self, para, sym)
             E3:float = E30[2]
-            """ 0.5 * C44 """
+            """ 2.*C44 """
             sym:str = "hex-yz"
-            dfmat:float = np.array([[[1.,0.,0.],[0.,1.,0.5*d],[0.,0.5*d,1.]] for d in ep])
+            dfmat:float = np.array([[[1./(1.-d**2.),0.,0.],[0.,1.,d],[0.,d,1.]] for d in ep])
             emod.calc_Emod(self, ep, dfmat, sym)
             E40:float = emod.Emod_fit(self, para, sym)
             E4:float = E40[2]
             """ C11 + C12 + 2.*C13 + 0.5*C33 """
-            sym:str = "hex-all"
+            sym:str = "hex-vol"
             dfmat:float = np.array([np.diag([1.+d,1.+d,1.+d]).tolist() for d in ep])
             emod.calc_Emod(self, ep, dfmat, sym)
-            E50:float = emod.Emod_fit(self, para, sym)
+            E50:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
             E5:float = E50[2]
 
-            self.C11:float = prms.AU2GPa * 0.5 * (E1 + 4.*E2)
-            self.C12:float = prms.AU2GPa * 0.5 * (4.*E2 - E1)
+            self.C11:float = prms.AU2GPa * 0.5 * (E1 + E2)
+            self.C12:float = prms.AU2GPa * 0.5 * (E1 - E2)
             self.C33:float = prms.AU2GPa * 2. * E3
-            self.C44:float = prms.AU2GPa * 2. * E4
+            self.C44:float = prms.AU2GPa * 0.5 * E4
             self.C13:float = prms.AU2GPa * 0.5 * (E5 - E1 - E3)
-            self.C66:float = prms.AU2GPa * 0.5 * (self.C11-self.C12)
+            self.C66:float = 0.5 * (self.C11-self.C12)
             Econst:float = np.array([self.C11,self.C12,self.C13,self.C33,self.C44])
             BV:float = (2.*(self.C11+self.C12) + self.C33 + 4.*self.C13)/9.
-            GV:float = (self.C11+self.C12+2.*self.C33-4.*self.C13+12.*self.C44+12.*self.C66)
+            GV:float = (self.C11+self.C12+2.*self.C33-4.*self.C13+12.*self.C44+12.*self.C66)/30.
             BR:float = ((self.C11+self.C12)*self.C33 - 2.*self.C13**2.)/(self.C11+self.C12+2.*self.C33-4.*self.C13)
             GR:float = (5.*(((self.C11+self.C12)*self.C33-2.*self.C13**2.)*self.C44*self.C66))/(2.*(3.*BV*self.C44*self.C66+((self.C11+self.C12)*self.C33-2.*self.C13**2.)*(self.C44+self.C66)))
+            self.Bmod:float = 0.5*(BV+BR)
             self.Gmod:float = 0.5*(GV+GR)
             self.Ymod:float = 9.*self.Bmod*self.Gmod/(3.*self.Bmod+self.Gmod)
             self.nu:float = 0.5*(1.-self.Ymod/(3.*self.Bmod))
@@ -382,7 +407,7 @@ class emod:
             print("* Possion ratio: ", self.nu)
             print("*")
             
-        elif ( brav == "mono" ):  # Monoclinic
+        elif ( prms.brav == "mono" ):  # Monoclinic
             print("*** Monoclinic system ***")
             print("* There are 8 independent elastic constants: ")
             print("* C11, C22, C33, C44, C55, C66, C12, C13")

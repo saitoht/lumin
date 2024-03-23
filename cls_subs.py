@@ -59,10 +59,11 @@ class subs:
         """ for emod """
         self.brav:str = "cub"
         self.sw_plt_emod:bool = False
+        self.sw_Bmod:bool = False
         self.dratio:float = 0.02
         self.ndiv_emod:int = 15
         """ for ccd """
-        self.gamma:float = 1.e-5
+        self.gamma:float = 1.0e-5
         self.Eabs0:float = 2.146
         self.Eem0:float = 1.702
         self.EFCg:float = 0.214
@@ -75,19 +76,19 @@ class subs:
         self.emin_ccd:float = 1.0
         self.emax_ccd:float = 3.0
         self.tempmin:float = 1.0
-        self.tempmax:float = 1.0e3
+        self.tempmax:float = 1e3
         self.I0:float = 1.0
         self.nmax:int = 30
-        self.ndiv_e:int = 1000000
-        self.ndiv_temp:int = 1000
+        self.ndiv_e:int = 1e6
+        self.ndiv_temp:int = 1e3
         self.ndiv_eg:int = 12
         """ for ph """
         self.ndim:int = [1,1,1]
         self.sw_HR:str = "none"
         self.sw_phrun:bool = False
         self.sw_plt_ph:bool = False
-        self.sigma:float = 6.e-3
-        self.ndiv_ph:int = 1000000
+        self.sigma:float = 6.0e-3
+        self.ndiv_ph:int = 1e6
         self.emin_ph:float = 0.0
         self.emax_ph:float = 1.0
         """ switch for execution """
@@ -165,6 +166,11 @@ class subs:
                         self.sw_plt_emod:bool = bool(int(line[1]))
                     else:
                         self.sw_plt_emod:bool = bool(int(line[0].replace("sw_plt_emod=","")))
+                elif ( sw_emod and line[0][0:8] == "sw_Bmod=" ):
+                    if ( len(line) == 2 ):
+                        self.sw_Bmod:bool = bool(int(line[1]))
+                    else:
+                        self.sw_Bmod:bool = bool(int(line[0].replace("sw_Bmod=","")))
                 elif ( sw_emod and line[0][0:7] == "dratio=" ):
                     if ( len(line) == 2 ):
                         self.dratio:float = float(line[1])
@@ -328,36 +334,36 @@ class subs:
                                 -p : sw_plt == True for all script {False}
                         [-emod] -pemod : sw_plt_emod == True {False}
                                 -brav {brav} : Bravias type (cub, tet, hex, mono, tri, ...) {cub}
-                                -dr {dratio} : distortion ratio
-                                -ndem {ndiv_emod} : number of devision for elastic moduli calc.
+                                -dr {dratio} : distortion ratio {0.02}
+                                -ndem {ndiv_emod} : number of devision for elastic moduli calc. {15}
+                                -Bmod : calculate Bmod or not {False}
                         [-ccd]  -pccd : sw_plt_ccd == True {False}
-                                -Eabs {Eabs0} : absorption energy by first-principles calc.
-                                -Eem {Eem0} : emission energy by first-principles calc.
-                                -FC {EFCg} : Frank-Condon params. for ground state energy curve
-                                -dQ {deltaQ} : difference of the configuration coordinate b/w exited & ground
-                                -I0 {I0} : Intensity of the spectrum
-                                -gamma {gamma} : broadness params. of Lorentzian
+                                -Eabs {Eabs0} : absorption energy by first-principles calc. {2.146}
+                                -Eem {Eem0} : emission energy by first-principles calc. {1.702}
+                                -FC {EFCg} : Frank-Condon params. for ground state energy curve {0.214}
+                                -dQ {deltaQ} : difference of the configuration coordinate b/w exited & ground {1.0}
+                                -I0 {I0} : Intensity of the spectrum {1.0}
+                                -gamma {gamma} : broadness params. of Lorentzian {1.0e-5}
                                 -eg : generate intermediate structures b/w excited & ground or not {False}
-                                -stateg {stateg} : name of the ground state
-                                -statee {statee} : name of the excited state
+                                -stateg {stateg} : name of the ground state {4A2g}
+                                -statee {statee} : name of the excited state {4T2g}
                                 -unit {sw_unit} : select unit of quantities (eV, cm^-1, nm) {eV}
-                                -emin_ccd {emin_ccd} : energy min. for plotting
-                                -emax_ccd {emax_ccd} : energy max. for plotting
-                                -tempmin {tempmin} : temperature min.
-                                -tempmax {tempmax} : temperature max.
+                                -emin_ccd {emin_ccd} : energy min. for plotting {1.0}
+                                -emax_ccd {emax_ccd} : energy max. for plotting {3.0}
+                                -tempmin {tempmin} : temperature min. {1.0}
+                                -tempmax {tempmax} : temperature max. {1.0e3}
                                 -nmax {nmax} : cut-off number of summation, larger value is plausible {30}
-                                -nde {ndiv_e} : number of devision for energy
-                                -ndt {ndiv_temp} : number of devision for temperature
-                                -ndeg {ndiv_eg} : number of devision for intermediate structures
+                                -nde {ndiv_e} : number of devision for energy {1.0e6}
+                                -ndt {ndiv_temp} : number of devision for temperature {1.0e3}
+                                -ndeg {ndiv_eg} : number of devision for intermediate structures {12}
                         [-ph]   -pph : sw_plt_ph == True {False}
-                                -ndim {ndim[1:3]} : number of dimension for generating supercell
-                                -HR {sw_HR} : switch for Huang-Rhys params. (****)
+                                -ndim {ndim[1:3]} : number of dimension for generating supercell {1 1 1}
+                                -HR {sw_HR} : switch for means to evaluate q_k (none, pos, force, both) {none}
                                 -phrun : perform phonon calc. or not {False}
-                                -nde_ph {ndiv_ph} : number of division for phonon spectrum
-                                -emin_ph {emin_ph} : energy min. for phonon spectrum
-                                -emax_ph {emax_ph} : energy max. for phonon spectrum
-                                -sw_qk {sw_qk} : switch of q_k evaluation
-                                -sigma {sigma} : standard derivation of Gaussian """
+                                -nde_ph {ndiv_ph} : number of division for phonon spectrum {1.0e6}
+                                -emin_ph {emin_ph} : energy min. for phonon spectrum {0.0}
+                                -emax_ph {emax_ph} : energy max. for phonon spectrum {1.0}
+                                -sigma {sigma} : standard derivation of Gaussian {6.0e-3} """
             print(helpmessage)
             sys.exit()
 
@@ -390,6 +396,8 @@ class subs:
             self.dratio:float = float(args[args.index("-dr")+1])
         if ( "-ndem" in args ):
             self.ndiv_emod:int = int(args[args.index("-ndem")+1])
+        if ( "-Bmod" in args ):
+            self.sw_Bmod:bool = True
         """ ccd """
         if ( "-Eabs" in args ):
             self.Eabs0:float = float(args[args.index("-Eabs")+1])
@@ -441,8 +449,6 @@ class subs:
             self.emin_ph:float = float(args[args.index("-emin_ph")+1])
         if ( "-emax_ph" in args ):
             self.emax_ph:float = float(args[args.index("-emax_ph")+1])
-        if ( "-sw_qk" in args ):
-            self.sw_qk:str = args[args.index("-sw_qk")+1]
         if ( "-sigma" in args ):
             self.sigma:float = float(args[args.index("-sigma")+1])
 
@@ -463,6 +469,7 @@ class subs:
             print("*** elastic moduli parameters ***")
             print("* brav: ", self.brav)
             print("* sw_plt_emod: ", self.sw_plt_emod)
+            print("* sw_Bmod: ", self.sw_Bmod)
             print("* dratio: ", self.dratio)
             print("* ndiv_emod: ", self.ndiv_emod)
             print("*")
