@@ -76,11 +76,11 @@ class subs:
         self.emin_ccd:float = 1.0
         self.emax_ccd:float = 3.0
         self.tempmin:float = 1.0
-        self.tempmax:float = 1e3
+        self.tempmax:float = 1000
         self.I0:float = 1.0
         self.nmax:int = 30
-        self.ndiv_e:int = 1e6
-        self.ndiv_temp:int = 1e3
+        self.ndiv_e:int = 1000000
+        self.ndiv_temp:int = 1000
         self.ndiv_eg:int = 12
         """ for ph """
         self.ndim:int = [1,1,1]
@@ -88,7 +88,7 @@ class subs:
         self.sw_phrun:bool = False
         self.sw_plt_ph:bool = False
         self.sigma:float = 6.0e-3
-        self.ndiv_ph:int = 1e6
+        self.ndiv_ph:int = 1000000
         self.emin_ph:float = 0.0
         self.emax_ph:float = 1.0
         """ switch for execution """

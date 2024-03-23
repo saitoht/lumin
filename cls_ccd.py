@@ -22,8 +22,8 @@ class ccd:
         if ( prms.sw_eg ):
             ccd.calc_Eeg(self,prms.stateg)
             ccd.calc_Eeg(self,prms.statee)
-            (Qming_3dim,Omegag,Sem,Qming_2dim,Omegag_2dim,Sem_2dim) = ccd.fit_Ecurve(self,prms.stateg,prms.EFCg)
-            (Qmine_3dim,Omegae,Sabs,Qmine_dim,Omegae_2dim,Sabs_2dim) = ccd.fit_Ecurve(self,prms.statee,self.EFCe)
+            (Qming_3dim,self.Omegag,self.Sem,Qming_2dim,Omegag_2dim,Sem_2dim) = ccd.fit_Ecurve(self,prms.stateg,prms.EFCg)
+            (Qmine_3dim,self.Omegae,self.Sabs,Qmine_dim,Omegae_2dim,Sabs_2dim) = ccd.fit_Ecurve(self,prms.statee,self.EFCe)
         ccd.calc_Line_shape(self)
         ccd.calc_Ecenter_shift(self)
         ccd.calc_FWHM(self)

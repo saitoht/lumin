@@ -1,0 +1,18 @@
+&sys
+ mat=al2o3_cr
+ nc=20
+ exe=$HOME/qe7.2/bin
+&ccd
+ Eabs0=2.599
+ Eem0=2.216
+ EFCg=0.214
+ sw_unit=eV
+ sw_eg=1
+ stateg=4A2g
+ statee=4T2g
+ emin_ccd=1.5
+ emax_ccd=3.5
+ tempmin=1.0
+ tempmax=1000
+ I0=1.0
+ nmax=30
