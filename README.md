@@ -40,7 +40,7 @@ For elastic moduli calculations
 lumin -emod
 ```
 
-I checked the results for cubic system.
+I checked the results for cubic & hexagonal system.
 You should be careful if you calculate non-cubic system.
 
 For phonon calculations

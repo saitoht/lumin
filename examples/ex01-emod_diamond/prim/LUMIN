@@ -1,0 +1,8 @@
+&sys
+ mat=c_dia
+ nc=20
+ exe=$HOME/qe7.2/bin
+&emod
+ brav=cub
+ sw_Bmod=1
+ sw_plt_ccd=0

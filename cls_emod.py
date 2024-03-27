@@ -26,6 +26,8 @@ class emod:
             sub.run(["cp {mat}.scf_Emod.in {mat}.scf.in0".format(mat=prms.mat)], shell=True)
         emod.get_Econst(self)
         emod.calc_Debye_temp(self)
+        if ( prms.sw_egap ):
+            emod.get_eig(self)
         print("* --- Finish Elastic Moduli calculation--- *")
         print("*")
 
@@ -74,7 +76,7 @@ class emod:
             p = pathlib.Path(ndir)
             if ( not p.is_dir() ):
                 (te, vol) = emod.qjob_dis(self, ndir, al, plat)
-                string = " {delta}   {alat}   {volume}   {tote} \n".format(delta=delta[i],alat=al,volume=vol,tote=te)
+                string = " {delta:.10f}   {alat:.10f}   {volume:.10f}   {tote:.10f} \n".format(delta=delta[i],alat=al,volume=vol,tote=te)
                 with open(fn,"a") as f:
                     f.write(string)
         os.chdir("../")
@@ -99,9 +101,9 @@ class emod:
             ndir:str = "delta"+str(round(ep,6))
             p = pathlib.Path(ndir)
             if ( not p.is_dir() ):
-                plat:float = np.dot(dfmat[i],plat0)
+                plat:float = plat0.dot(dfmat[i])
                 (tote, volume) = emod.qjob_dis(self, ndir, alat, plat)
-                string = " {delta}   {alat}   {volume}   {tote} \n".format(delta=ep,alat=alat,volume=volume,tote=tote)
+                string = " {delta:.10f}   {alat:.10f}   {volume:.10f}   {tote:.10f} \n".format(delta=ep,alat=alat,volume=volume,tote=tote)
                 with open(fn,"a") as f:
                     f.write(string)
         os.chdir("../")
@@ -274,7 +276,7 @@ class emod:
             sym:str = "tet_pl"
             dfmat:float = np.array([np.diag([1.+d,1.+d,1.]).tolist() for d in ep])
             emod.calc_Emod(self, ep, dfmat, sym)
-            E10:float = emod.Emod_fit(self, para, sym)
+            E10:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
             E1:float = E10[2]
             """ C11+C12+2*C33-4*C13 """
             sym:str = "tet_pl2"
@@ -286,7 +288,7 @@ class emod:
             sym:str = "tet_ax"
             dfmat:float = np.array([np.diag([1.,1.,1.+d]).tolist() for d in ep])
             emod.calc_Emod(self, ep, dfmat, sym)
-            E30:float = emod.Emod_fit(self, para, sym)
+            E30:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
             E3:float = E30[2]
             """ C11-C12 """
             sym:str = "tet_ortho"
@@ -347,9 +349,9 @@ class emod:
             print("* C11, C12, C13, C33, C44")
             """ C11 + C12 """
             sym:str = "hex-pp"
-            dfmat:float = np.array([np.diag([1.+d,1.+d,1./((1.+d)**2.)]).tolist() for d in ep])
+            dfmat:float = np.array([np.diag([1.+d,1.+d,1.]).tolist() for d in ep])
             emod.calc_Emod(self, ep, dfmat, sym)
-            E10:float = emod.Emod_fit(self, para, sym)
+            E10:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
             E1:float = E10[2]
             """ C11 - C12 """
             sym:str = "hex-pm"
@@ -359,9 +361,9 @@ class emod:
             E2:float = E20[2]
             """ 0.5*C33 """
             sym:str = "hex-ax"
-            dfmat:float = np.array([np.diag([np.sqrt(1./(1.+d)),np.sqrt(1./(1.+d)),1.+d]).tolist() for d in ep])
+            dfmat:float = np.array([np.diag([1.,1.,1.+d]).tolist() for d in ep])
             emod.calc_Emod(self, ep, dfmat, sym)
-            E30:float = emod.Emod_fit(self, para, sym)
+            E30:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
             E3:float = E30[2]
             """ 2.*C44 """
             sym:str = "hex-yz"
@@ -415,19 +417,19 @@ class emod:
             sym:str = "mono-unix"
             dfmat:float = np.array([np.diag([1.+d,1.,1.]).tolist() for d in ep])
             emod.calc_Emod(self, ep, dfmat, sym)
-            E10:float = emod.Emod_fit(self, para, sym)
+            E10:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
             E1:float = E10[2]
             """ 0.5 * C22 """
             sym:str = "mono-uniy"
             dfmat:float = np.array([np.diag([1.,1.+d,1.]).tolist() for d in ep])
             emod.calc_Emod(self, ep, dfmat, sym)
-            E20:float = emod.Emod_fit(self, para, sym)
+            E20:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
             E2:float = E20[2]
             """ 0.5 * C33 """
             sym:str = "mono-uniz"
             dfmat:float = np.array([np.diag([1.,1.,1.+d]).tolist() for d in ep])
             emod.calc_Emod(self, ep, dfmat, sym)
-            E30:float = emod.Emod_fit(self, para, sym)
+            E30:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
             E3:float = E30[2]
             """ 0.5 * C44 """
             sym:str = "mono-yz"
@@ -451,13 +453,13 @@ class emod:
             sym:str = "mono-plxy"
             dfmat:float = np.array([np.diag([1.+d,1.+d,1.]).tolist() for d in ep])
             emod.calc_Emod(self, ep, dfmat, sym)
-            E70:float = emod.Emod_fit(self, para, sym)
+            E70:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
             E7:float = E70[2]
             """ 0.5*C11 + C13 + 0.5*C33 """
             sym:str = "mono-plzx"
             dfmat:float = np.array([np.diag([1.+d,1.,1.+d]).tolist() for d in ep])
             emod.calc_Emod(self, ep, dfmat, sym)
-            E80:float = emod.Emod_fit(self, para, sym)
+            E80:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
             E8:float = E80[2]
 
             self.C11:float = prms.AU2GPa * 2. * E1
@@ -510,3 +512,151 @@ class emod:
         print("* mean velocity (m/s): ", self.vm)
         print("* Debye temperature (K): ", self.ThetaD)
         print("*")
+
+    ### ----------------------------------------------------------------------------- ###
+    def get_eig(self, path:str = ".", code: str = "ecalj"):
+        """ get eigenvalues from bnd***.spin* in ecalj and EIGENVAL in VASP """
+    
+        self.eigu:float = [ [] for i in range(prms.nkpath*prms.nkpt) ]
+        self.eigd:float = [ [] for i in range(prms.nkpath*prms.nkpt) ]
+        self.ehomo:float = -1000.0
+        self.elumo:float = 1000.0
+    
+        if ( code == "ecalj" ):
+            for k in range(prms.nkpath):
+                for isp in range(prms.nspin):
+                    if ( k+1 < 10 ):
+                        fn:str = path+"/bnd00"+str(k+1)+".spin"+str(isp+1)
+                    elif ( k+1 > 9 and k+1 < 100 ):
+                        fn:str = path+"/bnd0"+str(k+1)+".spin"+str(isp+1)
+                    else:
+                        fn:str = path+"/bnd"+str(k+1)+".spin"+str(isp+1)
+                    p = pathlib.Path(fn)
+                    if ( not p.exists() ):
+                        print("*** ERROR in m_dat.get_eig: "+fn+" doesn't exist!!!")
+                        sys.exit()
+                    bnd_org:float = np.loadtxt(fname=fn, comments="#", unpack=False, ndmin=0)
+                    count = 1
+                    count_bnd = 0
+                    for bnd in bnd_org:
+                        nb = int(bnd[0])
+                        ikp = ( count + count_bnd ) % ( prms.nkpt+1 ) + k * prms.nkpt - 1
+                        if ( nb > prms.nbndmin-1 and nb < prms.nbndmax+1 ):
+                            bd = bnd[2]
+                            if ( bd <= 0.0 and bd >= self.ehomo ):
+                                self.ehomo = bd
+                            elif ( bd >= 0.0 and bd <= self.elumo ):
+                                self.elumo = bd
+
+                            if ( isp == 0 ):
+                                self.eigu[ikp].append(bnd[2])
+                            else:
+                                self.eigd[ikp].append(bnd[2])
+                            count += 1
+                        else:
+                            count += 1
+                        if ( count % prms.nkpt == 0 ):
+                            count_bnd += 1
+
+        elif ( code == "VASP" ):
+            fn:str = path + "/EIGENVAL" 
+            p = pathlib.Path(fn)
+            if ( not p.exists() ):
+                print("*** ERROR in m_dat.get_eig: "+fn+" doesn't exist!!!")
+                sys.exit()
+
+            with open(file=fn, mode="r") as f:
+                data:str = f.readlines()
+            
+            count:int = 0
+            count_kp:int = 0
+            sw_skip:bool = False
+            for dat in data:
+                if ( count < 6 ):
+                    count += 1
+                elif ( ( count-count_kp-6 ) % ( prms.nbnds+1 ) == 0 ):
+                    if ( sw_skip ):
+                        sw_skip = False
+                    else:
+                        sw_skip = True
+                        count_kp += 1
+                    count += 1
+                else:
+                    nb = ( count-count_kp-6 ) % ( prms.nbnds+1 )
+                    if ( nb > prms.nbndmin-1 and nb < prms.nbndmax+1 ):
+                        if ( prms.nspin == 1 ):
+                            nn, eu, occu = dat.split()
+                        else:
+                            nn, eu, ed, occu, occd = dat.split()
+                            print(eu, ed)
+                            self.eigd[count_kp-1].append(ed)
+                        self.eigu[count_kp-1].append(eu)
+                    count += 1
+
+        elif ( code == "QE" ):
+            for isp in range(prms.nspin):
+                if ( isp == 0 ):
+                    fn:str = path+"/"+prms.mat+".bands_up.dat"
+                else:
+                    fn:str = path+"/"+prms.mat+".bands_dn.dat"
+                p = pathlib.Path(fn)
+                if ( not p.exists() ):
+                    print("*** ERROR in m_dat.get_eig: "+fn+" doesn't exist!!!")
+                    sys.exit()
+
+            sub.run(["grep Fermi "+prms.mat+".scf.out > grep.out"], shell=True)
+            with open("grep.out", "r") as f:
+                ef:float = float(f.readlines()[0].split()[4])
+            with open(file=fn, mode="r") as f:
+                data:str = f.readlines()
+
+            for i, line in enumerate(data):
+                if ( i == 0 ):
+                    nbnd:int = int(line.split()[2].replace(",",""))
+                    nkpt:int = int(line.split()[4])
+                    ncyc:int = prms.nbnd // 10
+                    nres:int = prms.nbnd % 10
+                    if ( not nres == 0 ):
+                        ncyc += 1
+                    ikp:int = -1
+                else:
+                    pass
+                if ( (i-1)//(ncyc+1) ):
+                    ikp += 1
+                    nb:int = 0
+                else:
+                    pass
+                if ( isp == 0 ):
+                    for bnd in line.split().replace("\n",""):
+                        if ( nb > prms.nbndmin-1 and nb < prms.nbndmax+1 ):
+                            self.eigu[ikp].append(float(bnd)-prms.ef)
+                            nb += 1
+                            if ( float(bnd) <= ef and float(bnd) >= self.ehomo ):
+                                self.ehomo = float(bnd)
+                            elif ( float(bnd) >= ef and float(bnd) <= self.elumo ):
+                                self.elumo = float(bnd)
+                            else:
+                                pass
+                        else:
+                            pass
+                else:
+                    for bnd in line.split().replace("\n",""):
+                        if ( nb > prms.nbndmin-1 and nb < prms.nbndmax+1 ):
+                            self.eigd[ikp].append(float(bnd)-self.ef)
+                            nb += 1
+                            if ( float(bnd) <= self.ef and float(bnd) >= self.ehomo ):
+                                self.ehomo = float(bnd)
+                            elif ( float(bnd) >= self.ef and float(bnd) <= self.elumo ):
+                                self.elumo = float(bnd)
+                            else:
+                                pass
+                        else:
+                            pass
+            
+        else:
+            print("*** ERROR in m_dat.get_eig: code should be 'ecalj', 'QE' or 'VASP'!!!")
+            sys.exit()
+
+        # E_g = LUMO - HOMO
+        self.egap: float = self.elumo - self.ehomo
+        print("* Energy gap (eV): ", self.egap)

@@ -1,0 +1,9 @@
+&sys
+ mat=tib2
+ nc=20
+ exe=$HOME/qe7.2/bin
+&emod
+ brav=hex
+ ndiv_emod=9
+ sw_Bmod=1
+ sw_plt_ccd=0

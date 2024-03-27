@@ -60,6 +60,7 @@ class subs:
         self.brav:str = "cub"
         self.sw_plt_emod:bool = False
         self.sw_Bmod:bool = False
+        self.sw_egap:bool = False
         self.dratio:float = 0.02
         self.ndiv_emod:int = 15
         """ for ccd """
@@ -171,6 +172,11 @@ class subs:
                         self.sw_Bmod:bool = bool(int(line[1]))
                     else:
                         self.sw_Bmod:bool = bool(int(line[0].replace("sw_Bmod=","")))
+                elif ( sw_emod and line[0][0:8] == "sw_egap=" ):
+                    if ( len(line) == 2 ):
+                        self.sw_egap:bool = bool(int(line[1]))
+                    else:
+                        self.sw_egap:bool = bool(int(line[0].replace("sw_egap=","")))
                 elif ( sw_emod and line[0][0:7] == "dratio=" ):
                     if ( len(line) == 2 ):
                         self.dratio:float = float(line[1])
@@ -337,6 +343,7 @@ class subs:
                                 -dr {dratio} : distortion ratio {0.02}
                                 -ndem {ndiv_emod} : number of devision for elastic moduli calc. {15}
                                 -Bmod : calculate Bmod or not {False}
+                                -egap : extract band gap energy {False}
                         [-ccd]  -pccd : sw_plt_ccd == True {False}
                                 -Eabs {Eabs0} : absorption energy by first-principles calc. {2.146}
                                 -Eem {Eem0} : emission energy by first-principles calc. {1.702}
@@ -398,6 +405,8 @@ class subs:
             self.ndiv_emod:int = int(args[args.index("-ndem")+1])
         if ( "-Bmod" in args ):
             self.sw_Bmod:bool = True
+        if ( "-egap" in args ):
+            self.sw_egap:bool = True
         """ ccd """
         if ( "-Eabs" in args ):
             self.Eabs0:float = float(args[args.index("-Eabs")+1])
@@ -470,6 +479,7 @@ class subs:
             print("* brav: ", self.brav)
             print("* sw_plt_emod: ", self.sw_plt_emod)
             print("* sw_Bmod: ", self.sw_Bmod)
+            print("* sw_egap: ", self.sw_egap)
             print("* dratio: ", self.dratio)
             print("* ndiv_emod: ", self.ndiv_emod)
             print("*")

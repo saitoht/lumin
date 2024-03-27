@@ -1,0 +1,138 @@
+* --- lumin.py --- *
+*** JOB Start at 2024/03/27 18:52:04.
+*
+* --- check parameters --- *
+*** system parameters ***
+* mat:  tib2
+* sw_run_emod:  True
+* sw_run_ccd:  False
+* sw_run_ph:  False
+* nc:  20
+* exe:  $HOME/qe7.2/bin
+*
+*** elastic moduli parameters ***
+* brav:  hex
+* sw_plt_emod:  True
+* sw_Bmod:  True
+* sw_egap:  False
+* dratio:  0.02
+* ndiv_emod:  9
+*
+* --- Finish check parameters --- *
+* --- Start Elastic Moduli calculation--- *
+*
+*** Bulk modulus ***
+*** First-principles for Bulk Modulus ***
+*
+* Optimized values
+(array([-2.95945832e-06,  1.70422564e+02,  1.81007232e-02,  3.86509663e+00]), array([[ 1.16242856e-14,  6.66998415e-12, -7.34149237e-14,
+        -1.47702383e-10],
+       [ 6.66998415e-12,  5.00846916e-08, -9.86734680e-11,
+        -5.90318633e-07],
+       [-7.34149237e-14, -9.86734680e-11,  8.38518508e-13,
+         2.19058566e-09],
+       [-1.47702383e-10, -5.90318633e-07,  2.19058566e-09,
+         9.52547077e-06]]))
+* parameters Bmod = [E0, V0, B0, B0p]
+[-2.95945832e-06  1.70422564e+02  1.81007232e-02  3.86509663e+00]
+* R2:  0.9999999964459174
+*
+* Bulk modulus by fitting BM_eq (GPa):  266.2709279433009
+*
+*** Hexagonal system ***
+* There are 5 independent elastic constants: 
+* C11, C12, C13, C33, C44
+*** First-principles for Elastic Moduli hex-pp ***
+*
+* Optimized values
+(array([ 5.78614424e-07,  3.65456733e-04,  4.92714646e-02, -1.12628113e-01]), array([[ 4.81275651e-18, -2.47577171e-23, -1.63144280e-14,
+         8.96630281e-20],
+       [-2.47577171e-23,  8.61794433e-14,  3.41037399e-19,
+        -2.49550271e-10],
+       [-1.63144280e-14,  3.41037399e-19,  9.78865663e-11,
+        -1.18096123e-15],
+       [ 8.96630281e-20, -2.49550271e-10, -1.18096123e-15,
+         8.45933086e-07]]))
+* parameters hex-pp = [0th, 1st, 2nd, 3rd]
+[ 5.78614424e-07  3.65456733e-04  4.92714646e-02 -1.12628113e-01]
+* R2:  0.9999998512014682
+*
+*** First-principles for Elastic Moduli hex-pm ***
+*
+* Optimized values
+(array([-2.61416522e-08,  4.36559920e-06,  4.06343018e-02]), array([[ 2.11699154e-16, -2.19674298e-21, -7.17623275e-13],
+       [-2.19674298e-21,  5.52570750e-13,  1.47634138e-17],
+       [-7.17623275e-13,  1.47634138e-17,  4.30573877e-09]]))
+* parameters hex-pm = [0th, 1st, 2nd]
+[-2.61416522e-08  4.36559920e-06  4.06343018e-02]
+* R2:  0.999984355268201
+*
+*** First-principles for Elastic Moduli hex-ax ***
+*
+* Optimized values
+(array([ 2.00736768e-06,  3.59374760e-04,  1.55783410e-02, -2.92628627e-02]), array([[ 1.59744057e-19, -1.52352024e-24, -5.41505272e-16,
+         5.19911403e-21],
+       [-1.52352024e-24,  2.86045044e-15,  3.89374704e-21,
+        -8.28302204e-12],
+       [-5.41505272e-16,  3.89374704e-21,  3.24903160e-12,
+        -1.31774052e-17],
+       [ 5.19911403e-21, -8.28302204e-12, -1.31774052e-17,
+         2.80780421e-08]]))
+* parameters hex-ax = [0th, 1st, 2nd, 3rd]
+[ 2.00736768e-06  3.59374760e-04  1.55783410e-02 -2.92628627e-02]
+* R2:  0.9999999864779412
+*
+*** First-principles for Elastic Moduli hex-yz ***
+*
+* Optimized values
+(array([ 1.35450815e-09, -5.78786123e-10,  3.50157976e-02]), array([[ 1.38717264e-18, -6.25656347e-20, -4.70227301e-15],
+       [-6.25656347e-20,  3.61079417e-15, -1.86110752e-16],
+       [-4.70227301e-15, -1.86110752e-16,  2.82140431e-11]]))
+* parameters hex-yz = [0th, 1st, 2nd]
+[ 1.35450815e-09 -5.78786123e-10  3.50157976e-02]
+* R2:  0.9999998619310997
+*
+*** First-principles for Elastic Moduli hex-vol ***
+*
+* Optimized values
+(array([ 1.63785183e-06,  7.25016812e-04,  7.81294214e-02, -2.25472150e-01]), array([[ 2.60492708e-17, -7.62682840e-23, -8.83026125e-14,
+         4.58038541e-19],
+       [-7.62682840e-23,  4.66450399e-13,  1.90414309e-19,
+        -1.35070300e-09],
+       [-8.83026125e-14,  1.90414309e-19,  5.29815680e-10,
+        -1.35048360e-15],
+       [ 4.58038541e-19, -1.35070300e-09, -1.35048360e-15,
+         4.57865423e-06]]))
+* parameters hex-vol = [0th, 1st, 2nd, 3rd]
+[ 1.63785183e-06  7.25016812e-04  7.81294214e-02 -2.25472150e-01]
+* R2:  0.99999972082616
+*
+* Calculated values by DFT *
+* C11 (GPa):  661.279982914794
+* C12 (GPa):  63.52854888029694
+* C33 (GPa):  458.3307844447868
+* C44 (GPa):  257.55017749494533
+* C13 (GPa):  97.67498232052868
+* Voigt Bulk modulus (GPa):  255.40530859078706
+* Reuss Bulk modulus (GPa):  250.34276141728648
+* Hill Bulk modulus (GPa):  252.87403500403678
+* Voigt Shear modulus (GPa):  264.2626968516292
+* Reuss Shear modulus (GPa):  258.38091828581685
+* Hill Shear modulus (GPa):  261.321807568723
+* Young modulus (GPa):  583.1041216032833
+* Possion ratio:  0.11568209141890556
+*
+* calc_Debye_temp *
+* n:  3.0
+* Mass:  69.495
+* rho (kg/m^3):  4507.321137176433
+* longitudinal velocity (m/s):  11550.146021828661
+* transverse velocity (m/s):  7614.275315601637
+* mean velocity (m/s):  8335.762150981767
+* Debye temperature (K):  1214.4161646350524
+*
+* --- Finish Elastic Moduli calculation--- *
+*
+* --- All calculations are finished! --- *
+* Computation time: 23.044503927230835 (sec)
+*

@@ -206,7 +206,7 @@ class ccd:
                 string: str = ""
                 for j, nele in enumerate(nelems):
                     for k in range(nele):
-                        string += " {ele}  {x}  {y}  {z}  \n".format(ele=elements[j],x=pos[ic,0],y=pos[ic,1],z=pos[ic,2])
+                        string += " {ele}  {x:.f10}  {y:.f10}  {z:.f10}  \n".format(ele=elements[j],x=pos[ic,0],y=pos[ic,1],z=pos[ic,2])
                         ic += 1
                 with open("{mat}-eg{ic}.scf.in".format(mat=prms.mat,ic=i+1),"a") as f:
                     f.write(string)
@@ -216,7 +216,7 @@ class ccd:
                 sub.run(["grep ! {mat}-eg{ic}.scf.out > grep.out".format(mat=prms.mat, ic=i+1)], shell=True)
                 data: str = np.loadtxt("grep.out",dtype="str",unpack=True,ndmin=0)
                 os.chdir("../../")
-                string = "{Q}   {Etot} \n".format(Q=qc, Etot=data[4])
+                string = "{Q:.f10}   {Etot:.f10} \n".format(Q=qc, Etot=data[4])
                 with open(fn, "a") as f:
                     f.write(string)
 
@@ -241,9 +241,9 @@ class ccd:
         S_3dim:float = EFC / Omega_3dim
         print("* Fitted by cubic equation: ")
         print(coef_3dim)
-        print("* hbar*Omega (eV) [cubic]: sqrt({cube}Q+{square})".format(cube=(cfunit**2.)*6.*coef_3dim[0], square=(cfunit**2.)*2.*coef_3dim[1]))
-        print("* Qmin (amu^1/2 ang): {Qmin}".format(Qmin=Qmin_3dim))
-        print("* hbar*Omega (eV) @ Q=Qmin: {cubic}".format(cubic=Omega_3dim))
+        print("* hbar*Omega (eV) [cubic]: sqrt({cube:.f10}Q+{square:.f10})".format(cube=(cfunit**2.)*6.*coef_3dim[0], square=(cfunit**2.)*2.*coef_3dim[1]))
+        print("* Qmin (amu^1/2 ang): {Qmin:.f10}".format(Qmin=Qmin_3dim))
+        print("* hbar*Omega (eV) @ Q=Qmin: {cubic:.f10}".format(cubic=Omega_3dim))
         print("*")
     
         """ Harmonic approximation """
@@ -252,8 +252,8 @@ class ccd:
         S_2dim:float = EFC / Omega_2dim
         print("* Fitted by quadratic equation: ")
         print(coef_2dim)
-        print("* hbar*Omega (eV) [quadratic]: {square}".format(square=Omega_2dim))
-        print("* Qmin (amu^1/2 ang): {Qmin}".format(Qmin=Qmin_2dim))
+        print("* hbar*Omega (eV) [quadratic]: {square:.f10}".format(square=Omega_2dim))
+        print("* Qmin (amu^1/2 ang): {Qmin:.f10}".format(Qmin=Qmin_2dim))
     
         plt.xlabel(r"Q ($\sqrt{\mathrm{amu}} \cdot \AA$)")
         plt.ylabel("Energy (eV)")
