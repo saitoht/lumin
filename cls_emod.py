@@ -16,14 +16,18 @@ class emod:
         
         print("* --- Start Elastic Moduli calculation--- *")
         print("*")
-        p = pathlib.Path("{mat}.scf_Bmod.in".format(mat=prms.mat))
+        if ( prms.sw_relax ):
+            exejob:str = "relax"
+        else:
+            exejob:str = "scf"
+        p = pathlib.Path("{mat}.{job}_Bmod.in".format(mat=prms.mat,job=exejob))
         if ( p.exists() ):
-            sub.run(["cp {mat}.scf_Bmod.in {mat}.scf.in0".format(mat=prms.mat)], shell=True)
+            sub.run(["cp {mat}.{job}_Bmod.in {mat}.{job}.in0".format(mat=prms.mat,job=exejob)], shell=True)
         if ( prms.sw_Bmod ):
             emod.get_Bmod(self)
-        p = pathlib.Path("{mat}.scf_Emod.in".format(mat=prms.mat))
+        p = pathlib.Path("{mat}.{job}_Emod.in".format(mat=prms.mat,job=exejob))
         if ( p.exists() ):
-            sub.run(["cp {mat}.scf_Emod.in {mat}.scf.in0".format(mat=prms.mat)], shell=True)
+            sub.run(["cp {mat}.{job}_Emod.in {mat}.{job}.in0".format(mat=prms.mat,job=exejob)], shell=True)
         emod.get_Econst(self)
         emod.calc_Debye_temp(self)
         if ( prms.sw_egap ):
@@ -35,24 +39,59 @@ class emod:
     def qjob_dis(self, ndir:str, alat:float, plat:float):
         """ execute a job of distorted crystal """
 
+        skip:bool = False
         plat = alat * plat
         plat_str1:str = " {plat11} {plat12} {plat13} ".format(plat11=plat[0,0], plat12=plat[0,1], plat13=plat[0,2])
         plat_str2:str = " {plat21} {plat22} {plat23} ".format(plat21=plat[1,0], plat22=plat[1,1], plat23=plat[1,2])
         plat_str3:str = " {plat31} {plat32} {plat33} ".format(plat31=plat[2,0], plat32=plat[2,1], plat33=plat[2,2])
         sub.run(["mkdir "+ndir], shell=True)
         os.chdir(ndir)
-        sub.run(["cp ../../{mat}.scf.in0 {mat}.scf.in".format(mat=prms.mat)], shell=True)
-        sub.run(["sed -i -e 's/{alat}/"+str(alat)+"/g' "+prms.mat+".scf.in"], shell=True)
-        sub.run(["sed -i -e 's/{plat1}/"+str(plat_str1)+"/g' "+prms.mat+".scf.in"], shell=True)
-        sub.run(["sed -i -e 's/{plat2}/"+str(plat_str2)+"/g' "+prms.mat+".scf.in"], shell=True)
-        sub.run(["sed -i -e 's/{plat3}/"+str(plat_str3)+"/g' "+prms.mat+".scf.in"], shell=True)
-        sub.run(["mpirun -np {nc} {exe}/pw.x < {mat}.scf.in >& {mat}.scf.out".format(nc=prms.nc,exe=prms.exe,mat=prms.mat)], shell=True)
-        sub.run(["grep ! {mat}.scf.out > tote.tmp".format(mat=prms.mat)], shell=True)
-        te:float = float(np.loadtxt("tote.tmp",dtype="str",unpack=True,ndmin=0)[4])
-        sub.run(["rm work/{mat}.save/wfc*".format(mat=prms.mat)], shell=True)
+        if ( prms.code == "qe" ):
+            if ( prms.relax ):
+                exejob:str = "relax"
+            else:
+                exejob:str = "scf"
+            sub.run(["cp ../../{mat}.{job}.in0 {mat}.{job}.in".format(mat=prms.mat,job=exejob)], shell=True)
+            sub.run(["sed -i -e 's/{alat}/"+str(alat)+"/g' "+prms.mat+"."+exejob+".in"], shell=True)
+            sub.run(["sed -i -e 's/{plat1}/"+str(plat_str1)+"/g' "+prms.mat+"."+exejob+".in"], shell=True)
+            sub.run(["sed -i -e 's/{plat2}/"+str(plat_str2)+"/g' "+prms.mat+"."+exejob+".in"], shell=True)
+            sub.run(["sed -i -e 's/{plat3}/"+str(plat_str3)+"/g' "+prms.mat+"."+exejob+".in"], shell=True)
+            sub.run(["mpirun -np {nc} {exe}/pw.x < {mat}.{job}.in >& {mat}.{job}.out".format(nc=prms.nc,exe=prms.exe,mat=prms.mat,job=exejob)], shell=True)
+            sub.run(["grep ! {mat}.{job}.out | tail -1 > tote.tmp".format(mat=prms.mat,job=exejob)], shell=True)
+            te:float = float(np.loadtxt("tote.tmp",dtype="str",unpack=True,ndmin=0)[4])
+            sub.run(["rm work/{mat}.save/wfc*".format(mat=prms.mat)], shell=True)
+        elif ( prms.code == "ecalj" ):
+            sub.run(["cp ../../*.{mat} .".format(mat=prms.mat)], shell=True)
+            sub.run(["sed -i -e 's/{alat}/"+str(alat)+"/g' ctrl."+prms.mat], shell=True)
+            sub.run(["sed -i -e 's/{plat1}/"+str(plat_str1)+"/g' ctrl."+prms.mat], shell=True)
+            sub.run(["sed -i -e 's/{plat2}/"+str(plat_str2)+"/g' ctrl."+prms.mat], shell=True)
+            sub.run(["sed -i -e 's/{plat3}/"+str(plat_str3)+"/g' ctrl."+prms.mat], shell=True)
+            sub.run(["{exe}/lmfa {mat} >& llmfa".format(exe=prms.exe,mat=prms.mat)], shell=True)
+            sub.run(["mpirun -np {nc} {exe}/lmf {mat} >& llmf".format(nc=prms.nc,exe=prms.exe,mat=prms.mat)], shell=True)
+            p = pathlib.Path("./save."+prms.mat)
+            if ( not p.exists() ):
+                print("*** ERROR in cls_dat.qjob: The save file does not exist! Something went wrong in the scf calculation in ecalj!!!")
+                skip:bool = True
+            else:
+                sub.run(["grep c save.{mat} | tail -1 > tote.tmp".format(mat=prms.mat)], shell=True)
+                p = pathlib.Path("tote.tmp")
+                if ( p.stat().st_size == 0 ):
+                    print("*** ERROR: The calculation does not be converged!!!")
+                    skip:bool = True
+                else:
+                    data:str = np.loadtxt("tote.tmp",dtype=str,unpack=True,ndmin=0)
+                    if ( nsp == 1 ):
+                        self.te:float = float(data[1].replace("ehk(eV)=",""))
+                    elif ( nsp == 2 ):
+                        if ( data[1] == "mmom=" ):
+                            self.te:float = float(data[3].replace("ehk(eV)=",""))
+                        else:
+                            self.te:float = float(data[2].replace("ehk(eV)=",""))
+                    else:
+                        pass
         os.chdir("../")
         volume:float = abs(np.dot(plat[0],np.cross(plat[1],plat[2])))
-        return ( te, volume )
+        return ( te, volume, skip )
 
     ### ----------------------------------------------------------------------------- ###
     def calc_Bmod(self):
@@ -75,12 +114,14 @@ class emod:
             ndir:str = "alat"+str(round(al,6))
             p = pathlib.Path(ndir)
             if ( not p.is_dir() ):
-                (te, vol) = emod.qjob_dis(self, ndir, al, plat)
-                string = " {delta:.10f}   {alat:.10f}   {volume:.10f}   {tote:.10f} \n".format(delta=delta[i],alat=al,volume=vol,tote=te)
-                with open(fn,"a") as f:
-                    f.write(string)
+                (te, vol, skip) = emod.qjob_dis(self, ndir, al, plat)
+                if ( skip ):
+                    pass
+                else:
+                    string = " {delta:.10f}   {alat:.10f}   {volume:.10f}   {tote:.10f} \n".format(delta=delta[i],alat=al,volume=vol,tote=te)
+                    with open(fn,"a") as f:
+                        f.write(string)
         os.chdir("../")
-        print("*")
 
     ### ----------------------------------------------------------------------------- ###
     def calc_Emod(self, epsilon:float, dfmat:float, sym:str):
@@ -102,12 +143,14 @@ class emod:
             p = pathlib.Path(ndir)
             if ( not p.is_dir() ):
                 plat:float = plat0.dot(dfmat[i])
-                (tote, volume) = emod.qjob_dis(self, ndir, alat, plat)
-                string = " {delta:.10f}   {alat:.10f}   {volume:.10f}   {tote:.10f} \n".format(delta=ep,alat=alat,volume=volume,tote=tote)
-                with open(fn,"a") as f:
-                    f.write(string)
+                (tote, volume, skip) = emod.qjob_dis(self, ndir, alat, plat)
+                if ( skip ):
+                    pass
+                else:
+                    string = " {delta:.10f}   {alat:.10f}   {volume:.10f}   {tote:.10f} \n".format(delta=ep,alat=alat,volume=volume,tote=tote)
+                    with open(fn,"a") as f:
+                        f.write(string)
         os.chdir("../")
-        print("*")
 
     ### ----------------------------------------------------------------------------- ###
     def Emod_fit(self, para:float, sym:str, sw_3rd:bool = False):
@@ -207,7 +250,7 @@ class emod:
         para:float = [0.,0.,0.1]
         para_3rd:float = [0.,0.,0.1,0.]
         ep:float = np.linspace(-prms.dratio, prms.dratio, prms.ndiv_emod)
-        if ( prms.brav == "cub" ):  # simple cubic
+        if ( prms.brav == "cub" ):  # cubic
             """ see for example, M. Jamal, S. J. Asadabadi, I. Ahmad, H. A. R. Aliabad,
              Elastic constants of cubic crystals, Computational Materials Science 95 (2014) 592-599 """
             print("*** Cubic system ***")
@@ -340,8 +383,108 @@ class emod:
             print("* Young modulus (GPa): ", self.Ymod)
             print("* Poisson ratio nu: ", self.nu)
             print("*")
+
+        elif ( prms.brav == "ortho" ):  # orthorombic
+            """ see P.W.O. Nyawere et al., Physica B 434 (2014) 122-128.,
+            and L. Liu, et al., Crystals 7 (2017) 111 """
+            print("*** Orthorombic system ***")
+            print("* There are 9 independent elastic constatns: ")
+            print("* C11, C22, C33, C44, C55, C66, C12, C13, C23")
+            """ 0.5*C11 """
+            sym:str = "ortho-x"
+            dfmat:float = np.array([np.diag([1.+d,1.,1.]).tolist() for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E10:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
+            E1:float = E10[2]
+            """ 0.5*C22 """
+            sym:str = "ortho-y"
+            dfmat:float = np.array([np.diag([1.,1.+d,1.]).tolist() for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E20:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
+            E2:float = E20[2]
+            """ 0.5*C33 """
+            sym:str = "ortho-z"
+            dfmat:float = np.array([np.diag([1.,1.,1.+d]).tolist() for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E30:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
+            E3:float = E30[2]
+            """ 2.*C44 """
+            sym:str = "ortho-yz"
+            dfmat:float = np.array([[[(1.-d**2.)**(-1./3.),0.,0.],[0.,(1.-d**2.)**(-1./3.),d*(1.-d**2.)**(-1./3.)],[0.,d*(1.-d**2.)**(-1./3.),(1.-d**2.)**(-1./3.)]] for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E40:float = emod.Emod_fit(self, para, sym)
+            E4:float = E40[2]
+            """ 2.*C55 """
+            sym:str = "ortho-zx"
+            dfmat:float = np.array([[[(1.-d**2.)**(-1./3.),0.,d*(1.-d**2.)**(-1./3.)],[0.,(1.-d**2.)**(-1./3.),0.],[d*(1.-d**2.)**(-1./3.),0.,(1.-d**2.)**(-1./3.)]] for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E50:float = emod.Emod_fit(self, para, sym)
+            E5:float = E50[2]
+            """ 2.*C66 """
+            sym:str = "ortho-xy"
+            dfmat:float = np.array([[[(1.-d**2.)**(-1./3.),d*(1.-d**2.)**(-1./3.),0.],[d*(1.-d**2.)**(-1./3.),(1.-d**2.)**(-1./3.),0.],[0.,0.,(1.-d**2.)**(-1./3.)]] for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E60:float = emod.Emod_fit(self, para, sym)
+            E6:float = E60[2]
+            """ C11 + C22 - 2.*C12 """
+            sym:str = "ortho-pmxy"
+            dfmat:float = np.array([np.diag([(1.+d)*(1.-d**2.)**(-1./3.),(1.-d)*(1.-d**2.)**(-1./3.),(1.-d**2.)**(-1./3.)]).tolist() for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E70:float = emod.Emod_fit(self, para, sym)
+            E7:float = E70[2]
+            """ C11 + C33 - 2.*C13 """
+            sym:str = "ortho-pmzx"
+            dfmat:float = np.array([np.diag([(1.+d)*(1.-d**2.)**(-1./3.),(1.-d**2.)**(-1./3.),(1.-d)*(1.-d**2.)**(-1./3.)]).tolist() for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E80:float = emod.Emod_fit(self, para, sym)
+            E8:float = E80[2]
+            """ C22 + C33 - 2.*C23 """
+            sym:str = "ortho-pmyz"
+            dfmat:float = np.array([np.diag([(1.-d**2.)**(-1./3.),(1.+d)*(1.-d**2.)**(-1./3.),(1.+d)*(1.-d**2.)**(-1./3.)]).tolist() for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E90:float = emod.Emod_fit(self, para, sym)
+            E9:float = E90[2]
+
+            self.C11:float = prms.AU2GPa * 2. * E1
+            self.C22:float = prms.AU2GPa * 2. * E2
+            self.C33:float = prms.AU2GPa * 2. * E3
+            self.C44:float = prms.AU2GPa * 0.5 * E4
+            self.C55:float = prms.AU2GPa * 0.5 * E5
+            self.C66:float = prms.AU2GPa * 0.5 * E6
+            self.C12:float = -prms.AU2GPa * 0.5 * (E7 - 2.*E1 - 2.*E2)
+            self.C13:float = -prms.AU2GPa * 0.5 * (E8 - 2.*E3 - 2.*E1)
+            self.C23:float = -prms.AU2GPa * 0.5 * (E9 - 2.*E2 - 2.*E3)
+            Econst:float = np.array([self.C11,self.C22,self.C33,self.C44,self.C55,self.C66,self.C12,self.C13,self.C23])
+            BV:float = (self.C11+2.*self.C12+2.*self.C13+self.C22+2.*self.C23+self.C33)/9.
+            GV:float = (self.C11-self.C12-self.C13+self.C22-self.C23+self.C33+3.*self.C44+3.*self.C55+3.*self.C66)/15.
+            chi:float = self.C13*(self.C12*self.C23-self.C13*self.C22) + self.C23*(self.C12*self.C13-self.C23*self.C11) + self.C33*(self.C11*self.C22-self.C12**2.)
+            BR:float = chi/(self.C11*(self.C22+self.C33-2.*self.C23) + self.C22*(self.C33-2.*self.C13) - 2.*self.C33*self.C12 + self.C12*(2.*self.C23-self.C12) + self.C13*(2.*self.C12-self.C13) + self.C23*(2.*self.C13-self.C23))
+            GR:float = 15./(4.*(self.C11*(self.C22+self.C33+self.C23) + self.C22*(self.C33+self.C13) + self.C33*self.C12 - self.C12*(self.C23+self.C12) - self.C13*(self.C12+self.C13) - self.C23*(self.C13+self.C23))/chi + 3.*(1./self.C44)+1./self.C55+1./self.C66)
+            self.Bmod:float = 0.5*(BV+BR)
+            self.Gmod:float = 0.5*(GV+GR)
+            self.Ymod:float = 9.*self.Bmod*self.Gmod/(3.*self.Bmod+self.Gmod)
+            self.nu:float = (3.*self.Bmod-2.*self.Gmod)/(6.*self.Bmod+2.*self.Gmod)
+            print("* Calculated values by DFT *")
+            print("* C11 (GPa): ", self.C11)
+            print("* C22 (GPa): ", self.C22)
+            print("* C33 (GPa): ", self.C33)
+            print("* C44 (GPa): ", self.C44)
+            print("* C55 (GPa): ", self.C55)
+            print("* C66 (GPa): ", self.C66)
+            print("* C12 (GPa): ", self.C12)
+            print("* C13 (GPa): ", self.C13)
+            print("* C23 (GPa): ", self.C23)
+            print("* Voigt Bulk modulus (GPa): ", BV)
+            print("* Reuss Bulk modulus (GPa): ", BR)
+            print("* Hill Bulk modulus (GPa): ", self.Bmod)
+            print("* Voigt Shear modulus (GPa): ", GV)
+            print("* Reuss Shear modulus (GPa): ", GR)
+            print("* Hill Shear modulus (GPa): ", self.Gmod)
+            print("* Young modulus (GPa): ", self.Ymod)
+            print("* Possion ratio: ", self.nu)
+            print("*")
         
-        elif ( prms.brav == "hex" ):  # simple hexagonal
+        elif ( prms.brav == "hex" ):  # hexagonal
             """ see for example, Z. Zhang, Z. H. Fu, R. F. Zhang, D. Legut, and H. B. Guo,
                 Anomalous mechanical strengths and shear deformation paths of Al2O3 polymorphs with high ionicity, RCS Advances """
             print("*** Hexagonal system ***")
@@ -408,25 +551,111 @@ class emod:
             print("* Young modulus (GPa): ", self.Ymod)
             print("* Possion ratio: ", self.nu)
             print("*")
+
+        elif ( prms.brav == "trig1" ):  # Trigonal (D3, C3v, D3d)
+            print("*** Trigonal (D3, C3v, D3d) system ***")
+            print("* There are 6 independent elastic constants: ")
+            print("* C11, C33, C12, C13, C44, C24")
+            """ 0.5 * C11 """
+            sym:str = "trig1-x"
+            dfmat:float = np.array([np.diag([1.+d,1.,1.]).tolist() for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E10:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
+            E1:float = E10[2]
+            """ 0.5 * C33 """
+            sym:str = "trig1-z"
+            dfmat:float = np.array([np.diag([1.,1.,1.+d]).tolist() for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E20:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
+            E2:float = E20[2]
+            """ C11 - C12 """
+            sym:str = "trig1-pm"
+            dfmat:float = np.array([np.diag([1.+d,1.-d,1./(1.-d**2.)]).tolist() for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E30:float = emod.Emod_fit(self, para, sym)
+            E3:float = E30[2]
+            """ 0.5 * ( 2.*C11 + C33 + 2.*C12 + 4.*C13 ) """
+            sym:str = "trig1-vol"
+            dfmat:float = np.array([np.diag([1.+d,1.+d,1.+d]).tolist() for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E40:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
+            E4:float = E40[2]
+            """ C44 """
+            sym:str = "trig1-yz"
+            dfmat:float = np.array([[[(1.-d**2.)**(-1.),0.,0.],[0.,1.,d],[0.,d,1.]] for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E50:float = emod.Emod_fit(self, para, sym)
+            E5:float = E50[2]
+            """ 0.5 * ( 2.*C11 - 2.*C12 + C44 - 4.*C24 ) """
+            sym:str = "trig1-pmyz"
+            dfmat:float = np.array([[[1.+d,0.,0.],[0.,1.-d,d],[0.,d,(1.-d**2.)**(-1.)]] for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E60:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
+            E6:float = E60[2]
+
+            self.C11:float = prms.AU2GPa * 2. * E1
+            self.C33:float = prms.AU2GPa * 2. * E2
+            self.C12:float = -prms.AU2GPa * (E3-2.*E1)
+            self.C13:float = prms.AU2GPa * 0.5 * (E4-E1+0.5*E2) - 0.5 * self.C12
+            self.C44:float = prms.AU2GPa * E5
+            self.C24:float = -prms.AU2GPa * 0.5 * (E6+E1+0.25*E5) - 0.5 * self.C12
+            Econst:float = np.array([self.C11,self.C33,self.C12,self.C13,self.C44,self.C24])
+            BV:float = (2.*(self.C11+self.C12+2.*self.C13)+self.C33)/9.
+            GV:float = ((7.*self.C11-5.*self.C12-4.*self.C13)+(2.*self.C33+12.*self.C44))/30.
+            Stiffness:float = np.array([[self.C11,self.C12,self.C13,-self.C24,0.,0.],
+                                        [self.C12,self.C11,self.C13,self.C24,0.,0.],
+                                        [self.C13,self.C13,self.C33,0.,0.,0.],
+                                        [-self.C24,self.C24,0.,self.C44,0.,0.],
+                                        [0.,0.,0.,0.,self.C44,-self.C24],
+                                        [0.,0.,0.,0.,-self.C24,0.5*(self.C11-self.C12)]])
+            Compliance:float = np.linalg.inv(Stiffness)
+            S11:float = Compliance[0,0]
+            S22:float = Compliance[1,1]
+            S33:float = Compliance[2,2]
+            S44:float = Compliance[3,3]
+            S12:float = Compliance[0,1]
+            S13:float = Compliance[0,2]
+            BR:float = 1./(2.*(S11+S22+2.*S13)+S33)
+            GR:float = 30./((19.*S11-11.*S12-16.*S13)+(8.*S33+12.*S44))
+            self.Bmod:float = 0.5*(BV+BR)
+            self.Gmod:float = 0.5*(GV+GR)
+            self.Ymod:float = 9.*self.Bmod*self.Gmod/(3.*self.Bmod+self.Gmod)
+            self.nu:float = 0.5*(1.-self.Ymod/(3.*self.Bmod))
+            print("* Calculated values by DFT *")
+            print("* C11 (GPa): ", self.C11)
+            print("* C33 (GPa): ", self.C33)
+            print("* C44 (GPa): ", self.C44)
+            print("* C12 (GPa): ", self.C12)
+            print("* C13 (GPa): ", self.C13)
+            print("* C24 (GPa): ", self.C24)
+            print("* Voigt Bulk modulus (GPa): ", BV)
+            print("* Reuss Bulk modulus (GPa): ", BR)
+            print("* Hill Bulk modulus (GPa): ", self.Bmod)
+            print("* Voigt Shear modulus (GPa): ", GV)
+            print("* Reuss Shear modulus (GPa): ", GR)
+            print("* Hill Shear modulus (GPa): ", self.Gmod)
+            print("* Young modulus (GPa): ", self.Ymod)
+            print("* Possion ratio: ", self.nu)
+            print("*")
             
         elif ( prms.brav == "mono" ):  # Monoclinic
             print("*** Monoclinic system ***")
-            print("* There are 8 independent elastic constants: ")
-            print("* C11, C22, C33, C44, C55, C66, C12, C13")
+            print("* There are 13 independent elastic constants: ")
+            print("* C11, C22, C33, C44, C55, C66, C12, C13, C15, C23, C25, C35, C46")
             """ 0.5 * C11 """
-            sym:str = "mono-unix"
+            sym:str = "mono-x"
             dfmat:float = np.array([np.diag([1.+d,1.,1.]).tolist() for d in ep])
             emod.calc_Emod(self, ep, dfmat, sym)
             E10:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
             E1:float = E10[2]
             """ 0.5 * C22 """
-            sym:str = "mono-uniy"
+            sym:str = "mono-y"
             dfmat:float = np.array([np.diag([1.,1.+d,1.]).tolist() for d in ep])
             emod.calc_Emod(self, ep, dfmat, sym)
             E20:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
             E2:float = E20[2]
             """ 0.5 * C33 """
-            sym:str = "mono-uniz"
+            sym:str = "mono-z"
             dfmat:float = np.array([np.diag([1.,1.,1.+d]).tolist() for d in ep])
             emod.calc_Emod(self, ep, dfmat, sym)
             E30:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
@@ -461,6 +690,7 @@ class emod:
             emod.calc_Emod(self, ep, dfmat, sym)
             E80:float = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
             E8:float = E80[2]
+            #### you need more distorsions
 
             self.C11:float = prms.AU2GPa * 2. * E1
             self.C22:float = prms.AU2GPa * 2. * E2
@@ -470,7 +700,31 @@ class emod:
             self.C66:float = prms.AU2GPa * 2. * E6
             self.C12:float = prms.AU2GPa * (E7 - E1 - E2)
             self.C13:float = prms.AU2GPa * (E8 - E1 - E3)
+            #self.C15:float =
+            #self.C23:float =
+            #self.C25:float =
+            #self.C35:float =
+            #self.C46:float = 
             Econst:float = np.array([self.C11,self.C12,self.C13,self.C22,self.C33,self.C44,self.C55,self.C66])
+            BV:float = (self.C11+self.C22+self.C33+2.*(self.C12+self.C13+self.C23))/9.
+            GV:float = (self.C11+self.C22+self.C33+3.*(self.C44+self.C55+self.C66)-(self.C12+self.C13+self.C23))/15.
+            a:float = self.C33*self.C55 - self.C35**2.
+            b:float = self.C23*self.C55 - self.C25*self.C35
+            c:float = self.C13*self.C35 - self.C15*self.C33
+            d:float = self.C13*self.C55 - self.C15*self.C35
+            e:float = self.C13*self.C25 - self.C15*self.C23
+            f:float = self.C11*(self.C22*self.C55 - self.C25**2.) - self.C12*(self.C12*self.C55 - self.C15*self.C25) + self.C15*(self.C12*self.C25 - self.C15*self.C22) + self.C25*(self.C23*self.C35 - self.C25*self.C33)
+            g:float = self.C11*self.C22*self.C33 - self.C11*self.C23**2. - self.C22*self.C13**2. - self.C33*self.C12**2. + 2.*self.C12*self.C13*self.C23
+            Omg:float = 2.*(self.C15*self.C25*(self.C33*self.C12-self.C13*self.C23)+self.C15*self.C35*(self.C22*self.C13-self.C12*self.C23)+self.C25*self.C35
+                            *(self.C11*self.C23-self.C12*self.C13))-((self.C15**2.)*(self.C22*self.C33-self.C23**2.)+(self.C25**2.)*(self.C11*self.C33-self.C13**2.)+(self.C35**2.)
+                                                                     *(self.C11*self.C22-self.C12**2.)) + g*self.C55
+            BR:float = Omg/(a*(self.C11+self.C22-2.*self.C12)+b*(2.*self.C12-2.*self.C11-self.C23)+c*(self.C15-2.*self.C25)+d*(2.*self.C12+2.*self.C23-self.C13-2.*self.C22)+2.*e*(self.C25-self.C15)+f)
+            coff:float = 4.*(a*(self.C11+self.C22+self.C12)+b*(self.C11-self.C12-self.C23)+c*(self.C15+self.C25)+d*(self.C22-self.C12-self.C23-self.C13)+e*(self.C15-self.C25)+f)
+            GR:float = 15./((coff/Omg) + 3.*((g/Omg) + (self.C44+self.C66)/(self.C44*self.C66-self.C46**2.)))
+            self.Bmod:float = 0.5*(BV+BR)
+            self.Gmod:float = 0.5*(GV+GR)
+            self.Ymod:float = 9.*self.Bmod*self.Gmod/(3.*self.Bmod+self.Gmod)
+            self.nu:float = 0.5*(1.-self.Ymod/(3.*self.Bmod))
             print("* Calculated values by DFT *")
             print("* C11 (GPa): ", self.C11)
             print("* C22 (GPa): ", self.C22)
@@ -480,11 +734,19 @@ class emod:
             print("* C66 (GPa): ", self.C66)
             print("* C12 (GPa): ", self.C12)
             print("* C13 (GPa): ", self.C13)
+            print("* Voigt Bulk modulus (GPa): ", BV)
+            print("* Reuss Bulk modulus (GPa): ", BR)
+            print("* Hill Bulk modulus (GPa): ", self.Bmod)
+            print("* Voigt Shear modulus (GPa): ", GV)
+            print("* Reuss Shear modulus (GPa): ", GR)
+            print("* Hill Shear modulus (GPa): ", self.Gmod)
+            print("* Young modulus (GPa): ", self.Ymod)
+            print("* Possion ratio: ", self.nu)
             print("*")
-            
+
         else:
-            print("*** ERROR in emod.get_Econst: brav should be 'cub', or 'hex'!!!")
-            print("*** Other crystal systems are not implemented!!!")
+            print("*** ERROR in emod.get_Econst: brav should be 'cub', 'tet', 'ortho', 'hex', 'trig1', or 'mono'!!!")
+            print("*** Other crystal systems (triclinic) are not implemented!!!")
             sys.exit()
 
     ### ----------------------------------------------------------------------------- ###
@@ -514,7 +776,7 @@ class emod:
         print("*")
 
     ### ----------------------------------------------------------------------------- ###
-    def get_eig(self, path:str = ".", code: str = "ecalj"):
+    def get_eig(self, path:str = "."):
         """ get eigenvalues from bnd***.spin* in ecalj and EIGENVAL in VASP """
     
         self.eigu:float = [ [] for i in range(prms.nkpath*prms.nkpt) ]
@@ -522,7 +784,7 @@ class emod:
         self.ehomo:float = -1000.0
         self.elumo:float = 1000.0
     
-        if ( code == "ecalj" ):
+        if ( prms.code == "ecalj" ):
             for k in range(prms.nkpath):
                 for isp in range(prms.nspin):
                     if ( k+1 < 10 ):
@@ -533,7 +795,7 @@ class emod:
                         fn:str = path+"/bnd"+str(k+1)+".spin"+str(isp+1)
                     p = pathlib.Path(fn)
                     if ( not p.exists() ):
-                        print("*** ERROR in m_dat.get_eig: "+fn+" doesn't exist!!!")
+                        print("*** ERROR in cls_emod.get_eig: "+fn+" doesn't exist!!!")
                         sys.exit()
                     bnd_org:float = np.loadtxt(fname=fn, comments="#", unpack=False, ndmin=0)
                     count = 1
@@ -558,105 +820,81 @@ class emod:
                         if ( count % prms.nkpt == 0 ):
                             count_bnd += 1
 
-        elif ( code == "VASP" ):
-            fn:str = path + "/EIGENVAL" 
-            p = pathlib.Path(fn)
-            if ( not p.exists() ):
-                print("*** ERROR in m_dat.get_eig: "+fn+" doesn't exist!!!")
-                sys.exit()
-
-            with open(file=fn, mode="r") as f:
-                data:str = f.readlines()
-            
-            count:int = 0
-            count_kp:int = 0
-            sw_skip:bool = False
-            for dat in data:
-                if ( count < 6 ):
-                    count += 1
-                elif ( ( count-count_kp-6 ) % ( prms.nbnds+1 ) == 0 ):
-                    if ( sw_skip ):
-                        sw_skip = False
-                    else:
-                        sw_skip = True
-                        count_kp += 1
-                    count += 1
-                else:
-                    nb = ( count-count_kp-6 ) % ( prms.nbnds+1 )
-                    if ( nb > prms.nbndmin-1 and nb < prms.nbndmax+1 ):
-                        if ( prms.nspin == 1 ):
-                            nn, eu, occu = dat.split()
-                        else:
-                            nn, eu, ed, occu, occd = dat.split()
-                            print(eu, ed)
-                            self.eigd[count_kp-1].append(ed)
-                        self.eigu[count_kp-1].append(eu)
-                    count += 1
-
-        elif ( code == "QE" ):
-            for isp in range(prms.nspin):
-                if ( isp == 0 ):
-                    fn:str = path+"/"+prms.mat+".bands_up.dat"
-                else:
-                    fn:str = path+"/"+prms.mat+".bands_dn.dat"
-                p = pathlib.Path(fn)
-                if ( not p.exists() ):
-                    print("*** ERROR in m_dat.get_eig: "+fn+" doesn't exist!!!")
-                    sys.exit()
-
-            sub.run(["grep Fermi "+prms.mat+".scf.out > grep.out"], shell=True)
-            with open("grep.out", "r") as f:
-                ef:float = float(f.readlines()[0].split()[4])
-            with open(file=fn, mode="r") as f:
-                data:str = f.readlines()
-
-            for i, line in enumerate(data):
-                if ( i == 0 ):
-                    nbnd:int = int(line.split()[2].replace(",",""))
-                    nkpt:int = int(line.split()[4])
-                    ncyc:int = prms.nbnd // 10
-                    nres:int = prms.nbnd % 10
-                    if ( not nres == 0 ):
-                        ncyc += 1
-                    ikp:int = -1
-                else:
-                    pass
-                if ( (i-1)//(ncyc+1) ):
-                    ikp += 1
-                    nb:int = 0
-                else:
-                    pass
-                if ( isp == 0 ):
-                    for bnd in line.split().replace("\n",""):
-                        if ( nb > prms.nbndmin-1 and nb < prms.nbndmax+1 ):
-                            self.eigu[ikp].append(float(bnd)-prms.ef)
-                            nb += 1
-                            if ( float(bnd) <= ef and float(bnd) >= self.ehomo ):
-                                self.ehomo = float(bnd)
-                            elif ( float(bnd) >= ef and float(bnd) <= self.elumo ):
-                                self.elumo = float(bnd)
-                            else:
-                                pass
-                        else:
-                            pass
-                else:
-                    for bnd in line.split().replace("\n",""):
-                        if ( nb > prms.nbndmin-1 and nb < prms.nbndmax+1 ):
-                            self.eigd[ikp].append(float(bnd)-self.ef)
-                            nb += 1
-                            if ( float(bnd) <= self.ef and float(bnd) >= self.ehomo ):
-                                self.ehomo = float(bnd)
-                            elif ( float(bnd) >= self.ef and float(bnd) <= self.elumo ):
-                                self.elumo = float(bnd)
-                            else:
-                                pass
-                        else:
-                            pass
+        elif ( prms.code == "qe" ):
+            print("*** ERROR in cls_emod.get_eig: Sorry, I do not implement 'qe' version now.")
+            sys.exit()
             
         else:
-            print("*** ERROR in m_dat.get_eig: code should be 'ecalj', 'QE' or 'VASP'!!!")
+            print("*** ERROR in cls_emod.get_eig: code should be 'ecalj', or 'qe'!!!")
             sys.exit()
 
         # E_g = LUMO - HOMO
         self.egap: float = self.elumo - self.ehomo
         print("* Energy gap (eV): ", self.egap)
+        print("*")
+
+    ### ----------------------------------------------------------------------------- ###
+    def job_auto(self):
+        """ perform jobs of elastic moduli & energy band gaps using ecalj """
+
+        p = pathlib.Path("LISTS")
+        if ( not p.exists() ):
+            print("*** LISTS does not exist. Skip job_auto.")
+            mat_lists:str = []
+            brav_lists:str = []
+        else:
+            mat_lists, brav_lists = np.loadtxt("LISTS",dtype=str,unpack=True,ndmin=0)
+            
+        for i in range(len(mat_lists)):
+            prms.set_prms(mat_lists[i],brav_lists[i])
+            sub.run(["mkdir -p RESULTS/"+prms.mat],shell=True)
+            sub.run(["cp POS/POSCAR_{mat} RESULTS/{mat}/POSCAR".format(mat=prms.mat)],shell=True)
+            os.chdir("RESULTS/"+prms.mat)
+            sub.run(["vasp2ctrl POSCAR"],shell=True)
+            sub.run(["mv ctrls.POSCAR.vasp2ctrl ctrls."+prms.mat],shell=True)
+            (alat,plat,elems,nele,natm,pos,vol) = prms.get_POSCAR("POSCAR")
+            if ( "F" in elems ):
+                sub.run(["sed -i -e 's/F/F0/g' ctrls."+prms.mat],shell=True)
+                sub.run(["sed -i -e 's/F0e/Fe/g' ctrls."+prms.mat],shell=True)
+                with open("ctrls."+prms.mat,"a") as f:
+                    f.write("SPEC \n")
+                    for ele in elems:
+                        if ( ele == "F" ):
+                            f.write("   ATOM=F0 Z=9 \n")
+                        else:
+                            f.write("   ATOM={ele} Z={Znum} \n".format(ele=ele,Znum=prms.Znum[ele]))
+            sub.run(["ctrlgenM1.py "+prms.mat],shell=True)
+            sub.run(['mv ctrlgenM1.ctrl.{mat} ctrl.{mat}'.format(mat=prms.mat)], shell=True)
+            sub.run(['getsyml '+prms.mat], shell=True)
+
+            sub.run(["{exe}/lmfa {mat} >& llmfa".format(exe=prms.exe,mat=prms.mat)],shell=True)
+            sub.run(["mpirun -np {nc} {exe}/lmf {mat} >& llmf".format(nc=prms.nc,exe=prms.exe,mat=prms.mat)],shell=True)
+            sub.run(["mkdir LDA"],shell=True)
+            sub.run(["{exe}/job_band {mat} -np {nc}".format(exe=prms.exe,mat=prms.mat,nc=prms.nc)],shell=True)
+            sub.run(["{exe}/job_pdos {mat} -np {nc}".format(exe=prms.exe,mat=prms.mat,nc=prms.nc)],shell=True)
+            sub.run(["cp *.{mat} LDA".format(mat=prms.mat)],shell=True)
+            sub.run(["mkGWinput {mat}".format(mat=prms.mat)],shell=True)
+            sub.run(["{exe}/gwsc {mat} -np {nc}".format(exe=prms.exe,mat=prms.mat,nc=prms.nc)],shell=True)
+
+    ### ----------------------------------------------------------------------------- ###
+    def get_kmesh(self):
+        """ get appropriate kmesh """
+
+        (alat,plat,elems,nele,natm,pos,vol) = prms.get_POSCAR("POSCAR")
+        bvec:float = alat*alat * (2.*np.pi/vol) * np.array([np.cross(plat[1],plat[2]),np.cross(plat[2],plat[0]),np.cross(plat[0],plat[1])])
+        bvol:float = abs(np.dot(bvec[0],np.cross(bvec[1],bvec[2])))
+        ### standard ==>> Si 12*12*12
+        
+    ### ----------------------------------------------------------------------------- ###
+    def save_emod(self):
+        """ save emod data to a file """
+
+        fn:str = "DATA_emod"
+        p = pathlib.Path(fn)
+        if ( not p.exists() ):
+            string:str = "### 1:mat   2:Bmod(GPa)   3:Gmod(GPa)   4:Ymod(GPa)   5:Debye_temp(K)   6:egap(eV)  \n"
+            with open(fn,"w") as f:
+                f.write(string)
+        string:str = "{mat}   {Bmod:.f5}   {Gmod:.f5}   {Ymod:.f5}   {Debye:.f5}   {egap:.f5} \n".format(mat=prms.mat,Bmod=self.Bmod,Gmod=self.Gmod,Ymod=self.Ymod,Debye=self.ThetaD,egap=self.egap)
+        with open(fn,"a") as f:
+            f.write(string)

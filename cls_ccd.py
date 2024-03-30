@@ -24,35 +24,44 @@ class ccd:
             ccd.calc_Eeg(self,prms.statee)
             (Qming_3dim,self.Omegag,self.Sem,Qming_2dim,Omegag_2dim,Sem_2dim) = ccd.fit_Ecurve(self,prms.stateg,prms.EFCg)
             (Qmine_3dim,self.Omegae,self.Sabs,Qmine_dim,Omegae_2dim,Sabs_2dim) = ccd.fit_Ecurve(self,prms.statee,self.EFCe)
+        self.temparr:float = np.linspace(prms.tempmin, prms.tempmax, prms.ndiv_temp)
         ccd.calc_Line_shape(self)
-        ccd.calc_Ecenter_shift(self)
-        ccd.calc_FWHM(self)
+        (self.Eabs, self.Eem) = ccd.calc_Ecenter_shift(self,temparr)
+        (Eabs_temp, Eem_temp) = ccd.calc_Ecenter_shift(self,prms.temp)
+        self.W = ccd.calc_FWHM(self,temparr)
+        W_temp = ccd.calc_FWHM(self,prms.temp)
 
         print("*** check the parameters in ccd ***")
         if ( prms.sw_unit in {"eV","cm^-1"} ):
             print("* Absorption energy ({sunit}): ".format(sunit=prms.sw_unit), prms.Eabs0*self.unit)
             print("* Emission energy ({sunit}): ".format(sunit=prms.sw_unit), prms.Eem0*self.unit)
+            print("* Absorption energy (@ {temp}K) ({sunit}): ".format(temp=prms.temp,sunit=prms.sw_unit), Eabs_temp*self.unit)
+            print("* Emission energy (@ {temp}K) ({sunit}): ".format(temp=prms.temp,sunit=prms.sw_unit), Eem_temp*self.unit)
             print("* EFCg = Ee - Eg ({sunit}): ".format(sunit=prms.sw_unit), prms.EFCg*self.unit)
             print("* EFCe = Eg* - Ee* ({sunit}): ".format(sunit=prms.sw_unit), self.EFCe*self.unit)
             print("* Stokes shift (@ 0K) ({sunit}): ".format(sunit=prms.sw_unit), self.deltaS*self.unit)
             print("* Zero phonon photoemission line ({sunit}): ".format(sunit=prms.sw_unit), self.EZPL*self.unit)
             print("* FWHM (@ 0K) ({sunit}): ".format(sunit=prms.sw_unit), self.W0*self.unit)
+            print("* FWHM (@ {temp}K) ({sunit}): ".format(temp=prms.temp,sunit=prms.sw_unit), W_temp*self.unit)
             print("* DeltaR (ang): ", self.deltaR)
             print("* DeltaQ (sqrt(amu)*ang): ", self.deltaQ)
-            print("* DeltaQ[1:3]: ", self.dQvec)
+            print("* DeltaQ[1:3] (sqrt(amu)*ang): ", self.dQvec)
             print("* hbar*Omegag ({sunit}): ".format(sunit=prms.sw_unit), self.Omegag*self.unit)
             print("* hbar*Omegae ({sunit}): ".format(sunit=prms.sw_unit), self.Omegae*self.unit)
         elif ( prms.sw_unit == "nm" ):
             print("* Absorption energy (nm): ", prms.E2lambda(prms.Eabs0))
             print("* Emission energy (nm): ", prms.E2lambda(prms.Eem0))
+            print("* Absorption energy (@ {temp}K) ({sunit}): ".format(temp=prms.temp,sunit=prms.sw_unit), prms.E2lambda(Eabs_temp))
+            print("* Emission energy (@ {temp}K) ({sunit}): ".format(temp=prms.temp,sunit=prms.sw_unit), prms.E2lambda(Eem_temp))
             print("* EFCg = Ee - Eg (nm): ", prms.E2lambda(prms.EFCg))
             print("* EFCe = Eg* - Ee* (nm): ", prms.E2lambda(self.EFCe))
             print("* Stokes shift (@ 0K) (nm): ", prms.E2lambda(self.deltaS))
             print("* Zero phonon photoemission line (nm): ", prms.E2lambda(self.EZPL))
-            print("* FWHM (@ 0K) (nm): ", prms.E2lambda(self.W0))
+            print("* FWHM (@ 0K) (nm): ", self.W0)
+            print("* FWHM (@ {temp}K) (nm): ".format(temp=prms.temp), W_temp)
             print("* DeltaR (ang): ", self.deltaR)
             print("* DeltaQ (sqrt(amu)*ang): ", self.deltaQ)
-            print("* DeltaQ[1:3]: ", self.dQvec)
+            print("* DeltaQ[1:3]: (sqrt(amu)*ang)", self.dQvec)
             print("* hbar*Omegag (nm): ", prms.E2lambda(self.Omegag))
             print("* hbar*Omegae (nm): ", prms.E2lambda(self.Omegae))
         else:
@@ -71,12 +80,6 @@ class ccd:
     ### ----------------------------------------------------------------------------- ###
     def plt_ccd(self):
         """ plot the results of configuration coordinate model """
-
-        def Eg(x,x0,y0):
-            return (y0/(x0**2.)) * (x**2.)
-
-        def Ee(x,x0,y0,y1):
-            return ((y1-y0)/(x0**2.)) * ((x-x0)**2.) + y0
 
         plt.rcParams['font.family'] = 'Helvetica'
         plt.rcParams["xtick.labelsize"] = 15.0
@@ -98,31 +101,15 @@ class ccd:
         plt.rcParams["ytick.minor.size"] = 3.0
 
         print("*** PLOT 1D-CCD ***")
-        xQ:float = np.linspace(-0.5*self.deltaQ,1.5*self.deltaQ,1000)
-        yEg:float = Eg(xQ,self.deltaQ,prms.EFCg)
-        yEe:float = Ee(xQ,self.deltaQ,prms.EFCg+prms.Eem0,prms.Eabs0)
-        Qarr:float = [0.0, 0.0, self.deltaQ, self.deltaQ]
-        Earr:float = [0.0, prms.Eabs0, prms.EFCg, prms.EFCg+prms.Eem0]
-        plt.figure(figsize=(6,6.5))
-        plt.xlim(-0.5*self.deltaQ,1.5*self.deltaQ)
-        plt.ylim(-0.1, prms.emax_ccd)
-        plt.xlabel(r"$\Delta Q$ (amu$^{1/2}\cdot\mathrm{\AA}$)")
-        plt.ylabel("Energy (eV)")
-        plt.scatter(Qarr, Earr, color="white", marker="o", edgecolor="mediumblue", s=80)
-        plt.plot(xQ,yEg,color="red",lw=1.0)
-        plt.plot(xQ,yEe,color="red",lw=1.0)
-        plt.plot([0.0,0.0],[-0.1,prms.Eabs0],color="black",linestyle="dotted",lw=0.5)
-        plt.plot([self.deltaQ,self.deltaQ],[-0.1,prms.EFCg+prms.Eem0],color="black",linestyle="dotted",lw=0.5)
-        plt.plot([-0.5*self.deltaQ,self.deltaQ],[prms.EFCg+prms.Eem0,prms.EFCg+prms.Eem0],color="black",linestyle="dotted",lw=0.5)
-        plt.plot([-0.5*self.deltaQ,self.deltaQ],[prms.EFCg,prms.EFCg],color="black",linestyle="dotted",lw=0.5)
-        plt.plot([-0.5*self.deltaQ,1.5*self.deltaQ],[0.0,0.0],color="black",linestyle="dotted",lw=0.5)
-        plt.plot([-0.5*self.deltaQ,0.0],[prms.Eabs0,prms.Eabs0],color="black",linestyle="dotted",lw=0.5)
+        ccd.plt_1DCCD(self)
+        if ( sw_eg or pathlib.Path("CCD_"+prms.statee).exists() ):
+            ccd.plt_1DCCD(self,sw_anharm=True)
         plt.savefig("1DCCD_{state}.pdf".format(state=prms.statee))
         plt.show()
         
         print("*** PLOT LINE SHAPE ***")
         size:int = 30
-        plt.ylabel("Intensity (a.u.)")
+        plt.ylabel("Intensity (arbitrary unit)")
         plt.axhline(0, lw=0.5, c="black", linestyle="dashed")
         if ( prms.sw_unit in {"eV","cm^-1"} ):
             plt.xlabel("Energy ({sunit})".format(sunit=prms.sw_unit))
@@ -141,11 +128,11 @@ class ccd:
         plt.xlabel("Temperature (K)")
         plt.ylabel("Emission energy ({sunit})".format(sunit=prms.sw_unit))
         if ( prms.sw_unit in {"eV","cm^-1"} ):
-            plt.plot(self.temp, self.unit*self.Eabs, lw=1.0, c="black")
-            plt.plot(self.temp, self.unit*self.Eem, lw=1.0, c="red")
+            plt.plot(self.temparr, self.unit*self.Eabs, lw=1.0, c="black")
+            plt.plot(self.temparr, self.unit*self.Eem, lw=1.0, c="red")
         elif ( prms.sw_unit == "nm" ):
-            plt.plot(self.temp, prms.E2lambda(self.Eabs), lw=1.0, c="black")
-            plt.plot(self.temp, prms.E2lambda(self.Eem), lw=1.0, c="red")
+            plt.plot(self.temparr, prms.E2lambda(self.Eabs), lw=1.0, c="black")
+            plt.plot(self.temparr, prms.E2lambda(self.Eem), lw=1.0, c="red")
         plt.savefig("Epeak_Temp.pdf")
         plt.show()
                 
@@ -153,18 +140,88 @@ class ccd:
         plt.xlabel("Temperature (K)")
         plt.ylabel("Stokes shift ({sunit})".format(sunit=prms.sw_unit))
         if ( prms.sw_unit in {"eV","cm^-1"} ):
-            plt.plot(self.temp, self.unit*(self.Eabs-self.Eem), lw=1.0, c="black")
+            plt.plot(self.temparr, self.unit*(self.Eabs-self.Eem), lw=1.0, c="black")
         elif ( prms.sw_unit == "nm" ):
-            plt.plot(self.temp, prms.E2lambda(self.Eabs)-prms.E2lambda(self.Eem), lw=1.0, c="black")
+            plt.plot(self.temparr, prms.E2lambda(self.Eabs)-prms.E2lambda(self.Eem), lw=1.0, c="black")
         plt.savefig("Stokes_Temp.pdf")
         plt.show()
                 
         print("*** PLOT TEMPERATURE DEPENDENCE OF FWHM ***")
         plt.xlabel("Temperature (K)")
         plt.ylabel("FWHM ({sunit})".format(sunit=prms.sw_unit))
-        plt.plot(self.temp, self.unit*self.W, lw=1.0, c="black")
+        plt.plot(self.temparr, self.unit*self.W, lw=1.0, c="black")
         plt.savefig("FWHM_Temp.pdf")
         plt.show()
+
+    ### ----------------------------------------------------------------------------- ###
+    def plt_1DCCD(self, sw_anharm:bool = False):
+        """ plot 1D-CCD """
+
+        def Eg(x,x0,y0):
+            return (y0/(x0**2.)) * (x**2.)
+
+        def Ee(x,x0,y0,y1):
+            return ((y1-y0)/(x0**2.)) * ((x-x0)**2.) + y0
+
+        if ( not sw_anharm ):
+            xQ:float = np.linspace(-0.5*self.deltaQ,1.5*self.deltaQ,1000)
+            yEg:float = Eg(xQ,self.deltaQ,prms.EFCg)
+            yEe:float = Ee(xQ,self.deltaQ,prms.EFCg+prms.Eem0,prms.Eabs0)
+            Qarr:float = [0.0, 0.0, self.deltaQ, self.deltaQ]
+            Earr:float = [0.0, prms.Eabs0, prms.EFCg, prms.EFCg+prms.Eem0]
+            plt.figure(figsize=(6,6.5))
+            plt.xlim(-0.5*self.deltaQ,1.5*self.deltaQ)
+            plt.ylim(-0.1, prms.emax_ccd)
+            plt.xlabel(r"$\Delta Q$ (amu$^{1/2}\cdot\mathrm{\AA}$)")
+            plt.ylabel("Energy (eV)")
+            plt.scatter(Qarr, Earr, color="white", marker="o", edgecolor="mediumblue", s=80)
+            plt.plot(xQ,yEg,color="red",lw=1.0)
+            plt.plot(xQ,yEe,color="red",lw=1.0)
+            plt.plot([0.0,0.0],[-0.1,prms.Eabs0],color="black",linestyle="dotted",lw=0.5)
+            plt.plot([self.deltaQ,self.deltaQ],[-0.1,prms.EFCg+prms.Eem0],color="black",linestyle="dotted",lw=0.5)
+            plt.plot([-0.5*self.deltaQ,self.deltaQ],[prms.EFCg+prms.Eem0,prms.EFCg+prms.Eem0],color="black",linestyle="dotted",lw=0.5)
+            plt.plot([-0.5*self.deltaQ,self.deltaQ],[prms.EFCg,prms.EFCg],color="black",linestyle="dotted",lw=0.5)
+            plt.plot([-0.5*self.deltaQ,1.5*self.deltaQ],[0.0,0.0],color="black",linestyle="dotted",lw=0.5)
+            plt.plot([-0.5*self.deltaQ,0.0],[prms.Eabs0,prms.Eabs0],color="black",linestyle="dotted",lw=0.5)
+
+        else:
+            fn = "CCD_"+prms.statee
+            p = pathlib.Path(fn)
+            if ( not p.exists() ):
+                print("*** {fn} does not exist. Skip cls_ccd.plt_CCD_anharm.".format(fn=fn))
+            else:
+                Q, Eex, Egr = np.loadtxt(fn,dtype=float,unpack=True,ndmin=0)
+                x:float = np.linspace(-0.1+Q[0],0.1+Q[len(Q)-1],1000)
+                weight:float = np.ones(len(Q))
+                coef_g:float = np.polyfit(Q, Egr, 3, w=weight)
+                Efit_g:float = np.poly1d(coef_g)(x)
+                coef_e:float = np.polyfit(Q, Egr+Eex, 3, w=weight)
+                Efit_e:float = np.poly1d(coef_e)(x)
+                Qmin_e:float = (-coef_e[1]+np.sqrt(coef_e[1]**2.-3.*coef_e[0]*coef_e[2]))/(3.*coef_e[0])
+                plt.scatter(Q,Egr,color="white",edgecolor="crimson",s=80)
+                plt.scatter(Q,Egr+Eex,color="white",edgecolor="crimson",s=80)
+                plt.plot(x,Efit_g,linestyle="solid",color="red")
+                plt.plot(x,Efit_e,linestyle="solid",color="red")
+
+            if ( prms.sw_eg ):
+                fn_g:str = "DATA_{state}.dat".format(state=prms.stateg)
+                Q, Etot_g = np.loadtxt(fn,dtype='float',unpack=True,ndmin=0)
+                x:float = np.linspace(-0.1+Q[0],0.1+Q[len(Q)-1],1000)
+                weight:float = np.ones(len(Q))
+                coef_egg:float = np.polyfit(Q, (Etot_g-min(Etot_g))*prms.Ry, 3, w=weight)
+                Efit_egg:float = np.poly1d(coef_egg)(x)
+                Qmin_egg:float = (-coef_egg[1]+np.sqrt(coef_egg[1]**2.-3.*coef_egg[0]*coef_egg[2]))/(3.*coef_egg[0])
+                fn_e:str = "DATA_{state}.dat".format(state=prms.statee)
+                Q, Etot_e = np.loadtxt(fn,dtype='float',unpack=True,ndmin=0)
+                coef_ege:float = np.polyfit(Q, (Etot_e-min(Etot_e))*prms.Ry, 3, w=weight)
+                Efit_ege:float = np.poly1d(coef_ege)(x)
+                Qmin_ege:float = (-coef_ege[1]+np.sqrt(coef_ege[1]**2.-3.*coef_ege[0]*coef_ege[2]))/(3.*coef_ege[0])
+                plt.scatter(Q,(Etot_g-min(Etot_g))*prms.Ry,marker="o",label="data",edgecolor="slateblue",color="white",s=30)
+                plt.plot(x,Efit_egg,linestyle="dashed",color="mediumblue")
+                plt.scatter(Qmin_egg, np.poly1d(coef_egg)(Qmin_egg), marker="*", color="darkblue", s=60)
+                plt.scatter(Q,(Etot_e-min(Etot_e))*prms.Ry,marker="o",label="data",edgecolor="slateblue",color="white",s=30)
+                plt.plot(x,Efit_ege,linestyle="dashed",color="mediumblue")
+                plt.scatter(Qmin_ege, np.poly1d(coef_ege)(Qmin_ege), marker="*", color="darkblue", s=60)
             
     ### ----------------------------------------------------------------------------- ###
     def calc_Eeg(self, state:str):
@@ -254,17 +311,17 @@ class ccd:
         print(coef_2dim)
         print("* hbar*Omega (eV) [quadratic]: {square:.f10}".format(square=Omega_2dim))
         print("* Qmin (amu^1/2 ang): {Qmin:.f10}".format(Qmin=Qmin_2dim))
-    
-        plt.xlabel(r"Q ($\sqrt{\mathrm{amu}} \cdot \AA$)")
-        plt.ylabel("Energy (eV)")
-        plt.scatter(Q,(Etot-min(Etot))*prms.Ry,marker="o",label="data",edgecolor="darkred",color="white",s=30)
-        plt.plot(x,Efit_2dim,linestyle="dashed",color="mediumblue",label="fit 2dim")
-        plt.scatter(Qmin_2dim, np.poly1d(coef_2dim)(Qmin_2dim), marker="*", color="darkblue", s=60)
-        plt.plot(x,Efit_3dim,linestyle="dashed",color="coral",label="fit 3dim")
-        plt.scatter(Qmin_3dim, np.poly1d(coef_3dim)(Qmin_3dim), marker="*", color="crimson", s=60)
-        plt.legend()
-        plt.savefig("Ecurve_fit_{state}.pdf".format(state=state))
+
         if ( prms.sw_plt_ccd ):
+            plt.xlabel(r"Q ($\sqrt{\mathrm{amu}} \cdot \AA$)")
+            plt.ylabel("Energy (eV)")
+            plt.scatter(Q,(Etot-min(Etot))*prms.Ry,marker="o",label="data",edgecolor="darkred",color="white",s=30)
+            plt.plot(x,Efit_2dim,linestyle="dashed",color="mediumblue",label="fit 2dim")
+            plt.scatter(Qmin_2dim, np.poly1d(coef_2dim)(Qmin_2dim), marker="*", color="darkblue", s=60)
+            plt.plot(x,Efit_3dim,linestyle="dashed",color="coral",label="fit 3dim")
+            plt.scatter(Qmin_3dim, np.poly1d(coef_3dim)(Qmin_3dim), marker="*", color="crimson", s=60)
+            plt.legend()
+            plt.savefig("Ecurve_fit_{state}.pdf".format(state=state))
             plt.show()
         return (Qmin_3dim, Omega_3dim, S_3dim, Qmin_2dim, Omega_2dim, S_2dim)
         
@@ -336,22 +393,22 @@ class ccd:
         self.Labs = prms.I0 * self.Labs / max(self.Labs)
 
     ### ----------------------------------------------------------------------------- ###
-    def calc_Ecenter_shift(self):
+    def calc_Ecenter_shift(self, temperature):
         """ Eem shift and Eabs shift as a function of temperature """
         
-        self.temp:float = np.linspace(prms.tempmin, prms.tempmax, prms.ndiv_temp)
-        self.Eabs:float = prms.Eabs0 + ((self.Omegae**2. - self.Omegag**2.)/(self.Omegag**2.)) * prms.kB*self.temp
-        self.Eem:float = prms.Eem0 + ((self.Omegag**2. - self.Omegae**2.)/(self.Omegae**2.) +
-                                       (8.*(self.Omegag**4.)*self.deltaS)/(self.Omegae**2.*(self.Omegag**2.+self.Omegae**2.)*prms.Eem0)) * prms.kB*self.temp
-
-    ### ----------------------------------------------------------------------------- ###
-    def calc_FWHM(self):
-        """ Full width half maximum of transitions and its temperature dependence """
+        Eabs_temp:float = prms.Eabs0 + ((self.Omegae**2. - self.Omegag**2.)/(self.Omegag**2.)) * prms.kB*self.temperature
+        Eem_temp:float = prms.Eem0 + ((self.Omegag**2. - self.Omegae**2.)/(self.Omegae**2.) +
+                                      (8.*(self.Omegag**4.)*self.deltaS)/(self.Omegae**2.*(self.Omegag**2.+self.Omegae**2.)*prms.Eem0)) * prms.kB*self.temperature
+        return ( Eabs_temp, Eem_temp )
         
-        self.temp:float = np.linspace(prms.tempmin, prms.tempmax, prms.ndiv_temp)
+    ### ----------------------------------------------------------------------------- ###
+    def calc_FWHM(self, temperature):
+        """ Full width half maximum of transitions as a function of temperature """
+        
         self.W0:float = self.Sem * self.Omegag * np.sqrt(8.0*np.log(2.)) / np.sqrt(self.Sabs)
         if ( prms.sw_unit == "nm" ):
             W0min:float = prms.Eem0 - 0.5*self.W0
             W0max:float = prms.Eem0 + 0.5*self.W0
             self.W0 = prms.E2lambda(W0min) - prms.E2lambda(W0max)
-        self.W:float = self.W0 * np.sqrt( 1. / np.tanh(self.Omegae/(2.*prms.kB*self.temp)) )
+        W_temp:float = self.W0 * np.sqrt( 1. / np.tanh(self.Omegae/(2.*prms.kB*self.temperature)) )
+        return ( W_temp )

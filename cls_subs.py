@@ -18,6 +18,7 @@ class subs:
         self.kB:float = 8.617333262e-5          # eV K^-1
         self.NA:float = 6.02214e23              # /mol
         self.hbar:float = 1.05457182e-34        # J s
+        self.hbareV:float = 6.582119569e-16     # eV s
         self.ep:float = 1.60217663e-19          # C
         self.AU2GPa:float = 14710.513242194795  # A.U. to GPa
         self.eV2cm:float = 8065.73              # cm^-1
@@ -51,16 +52,46 @@ class subs:
                            "Rg": 280.,    "Cn": 285.,    "Nh": 278.,    "Fl": 289.,    "Mc": 289.,
                            "Lv": 293.,    "Ts": 293.,    "Og": 194.}
 
+        """ Z number """
+        self.Znum = {"H":  1,   "He": 2,   "Li": 3,   "Be": 4,   "B":  5,
+                     "C":  6,   "N":  7,   "O":  8,   "F":  9,   "Ne": 10,
+                     "Na": 11,  "Mg": 12,  "Al": 13,  "Si": 14,  "P":  15,
+                     "S":  16,  "Cl": 17,  "Ar": 18,  "K":  19,  "Ca": 20,
+                     "Sc": 21,  "Ti": 22,  "V": 23,   "Cr": 24,  "Mn": 25,
+                     "Fe": 26,  "Co": 27,  "Ni": 28,  "Cu": 29,  "Zn": 30,
+                     "Ga": 31,  "Ge": 32,  "As": 33,  "Se": 34,  "Br": 35,
+                     "Kr": 36,  "Rb": 37,  "Sr": 38,  "Y": 39,   "Zr": 40,
+                     "Nb": 41,  "Mo": 42,  "Tc": 43,  "Ru": 44,  "Rh": 45,
+                     "Pd": 46,  "Ag": 47,  "Cd": 48,  "In": 49,  "Sn": 50,
+                     "Sb": 51,  "Te": 52,  "I":  53,  "Xe": 54,  "Cs": 55,
+                     "Ba": 56,  "La": 57,  "Ce": 58,  "Pr": 59,  "Nd": 60,
+                     "Pm": 61,  "Sm": 62,  "Eu": 63,  "Gd": 64,  "Tb": 65,
+                     "Dy": 66,  "Ho": 67,  "Er": 68,  "Tm": 69,  "Yb": 70,
+                     "Lu": 71,  "Hf": 72,  "Ta": 73,  "W":  74,  "Re": 75,
+                     "Os": 76,  "Ir": 77,  "Pt": 78,  "Au": 79,  "Hg": 80,
+                     "Tl": 81,  "Pb": 82,  "Bi": 83,  "Po": 84,  "At": 85,
+                     "Rn": 86,  "Fr": 87,  "Ra": 88,  "Ac": 89,  "Th": 90,
+                     "Pa": 91,  "U" : 92,  "Np": 93,  "Pu": 94,  "Am": 95,
+                     "Cm": 96,  "Bk": 97,  "Cf": 98,  "Es": 99,  "Fm": 100,
+                     "Md": 101, "No": 102, "Lr": 103, "Rf": 104, "Db": 105,
+                     "Sg": 106, "Bh": 107, "Hs": 108, "Mt": 109, "Ds": 110,
+                     "Rg": 111, "Cn": 112, "Nh": 113, "Fl": 114, "Mc": 115,
+                     "Lv": 116, "Ts": 117, "Og": 118}
+
         """ default values """
         """ for system """
         self.mat:int = ""
         self.nc:int = 20
-        self.exe:int = "$HOME/qe/bin"
+        self.exe:str = "$HOME/qe/bin"
+        self.code:str = "qe"
         """ for emod """
         self.brav:str = "cub"
         self.sw_plt_emod:bool = False
         self.sw_Bmod:bool = False
+        self.sw_relax:bool = False
         self.sw_egap:bool = False
+        self.sw_GW:bool = False
+        self.sw_auto:bool = False
         self.dratio:float = 0.02
         self.ndiv_emod:int = 15
         """ for ccd """
@@ -77,7 +108,8 @@ class subs:
         self.emin_ccd:float = 1.0
         self.emax_ccd:float = 3.0
         self.tempmin:float = 1.0
-        self.tempmax:float = 1000
+        self.tempmax:float = 1000.0
+        self.temp:float = 298.0
         self.I0:float = 1.0
         self.nmax:int = 30
         self.ndiv_e:int = 1000000
@@ -92,6 +124,9 @@ class subs:
         self.ndiv_ph:int = 1000000
         self.emin_ph:float = 0.0
         self.emax_ph:float = 1.0
+        self.tinf:float = 1.0e3
+        self.ndiv_t:float = 1000000
+        self.gamma_spec:float = 1.0e-5
         """ switch for execution """
         self.sw_run_emod:bool = False
         self.sw_run_ccd:bool = False
@@ -153,6 +188,11 @@ class subs:
                         self.exe:str = line[1]
                     else:
                         self.exe:str = line[0].replace("exe=","")
+                elif ( sw_sys and line[0][0:5] == "code=" ):
+                    if ( len(line) == 2 ):
+                        self.code:str = line[1]
+                    else:
+                        self.code:str = line[0].replace("code=","")
                 else:
                     pass
 
@@ -172,6 +212,21 @@ class subs:
                         self.sw_Bmod:bool = bool(int(line[1]))
                     else:
                         self.sw_Bmod:bool = bool(int(line[0].replace("sw_Bmod=","")))
+                elif ( sw_emod and line[0][0:9] == "sw_relax=" ):
+                    if ( len(line) == 2 ):
+                        self.sw_relax:bool = bool(int(line[1]))
+                    else:
+                        self.sw_relax:bool = bool(int(line[0].replace("sw_relax=","")))
+                elif ( sw_emod and line[0][0:5] == "sw_GW=" ):
+                    if ( len(line) == 2 ):
+                        self.sw_GW:bool = bool(int(line[1]))
+                    else:
+                        self.sw_GW:bool = bool(int(line[0].replace("sw_GW=","")))
+                elif ( sw_emod and line[0][0:8] == "sw_auto=" ):
+                    if ( len(line) == 2 ):
+                        self.sw_auto:bool = bool(int(line[1]))
+                    else:
+                        self.sw_auto:bool = bool(int(line[0].replace("sw_auto=","")))
                 elif ( sw_emod and line[0][0:8] == "sw_egap=" ):
                     if ( len(line) == 2 ):
                         self.sw_egap:bool = bool(int(line[1]))
@@ -266,6 +321,11 @@ class subs:
                         self.tempmax:float = float(line[1])
                     else:
                         self.tempmax:float = float(line[0].replace("tempmax=",""))
+                elif ( sw_ccd and line[0][0:8] == "temp=" ):
+                    if ( len(line) == 2 ):
+                        self.temp:float = float(line[1])
+                    else:
+                        self.temp:float = float(line[0].replace("temp=",""))
                 elif ( sw_ccd and line[0][0:5] == "nmax=" ):
                     if ( len(line) == 2 ):
                         self.nmax:int = int(line[1])
@@ -311,6 +371,21 @@ class subs:
                         self.sigma:float = float(line[1])
                     else:
                         self.sigma:float = float(line[0].replace("sigma=",""))
+                elif ( sw_ph and line[0][0:5] == "tinf=" ):
+                    if ( len(line) == 2 ):
+                        self.tinf:float = float(line[1])
+                    else:
+                        self.tinf:float = float(line[0].replace("tinf=",""))
+                elif ( sw_ph and line[0][0:6] == "ndiv_t=" ):
+                    if ( len(line) == 2 ):
+                        self.ndiv_t:int = int(line[1])
+                    else:
+                        self.ndiv_t:int = int(line[0].replace("ndiv_t=",""))
+                elif ( sw_ph and line[0][0:11] == "gamma_spec=" ):
+                    if ( len(line) == 2 ):
+                        self.gamma_spec:float = float(line[1])
+                    else:
+                        self.gamma_spec:float = float(line[0].replace("gamma_spec=",""))
                 elif ( sw_ph and line[0][0:6] == "sw_HR=" ):
                     if ( len(line) == 2 ):
                         self.sw_HR:str = line[1]
@@ -337,18 +412,22 @@ class subs:
                                 -h : print helpmessage
                                 -nc {nc} : number of cpu {20}
                                 -exe {exe} : execute path {$HOME/qe/bin}
+                                -code {code} : code for DFT (qe, ecalj) {qe}
                                 -p : sw_plt == True for all script {False}
                         [-emod] -pemod : sw_plt_emod == True {False}
                                 -brav {brav} : Bravias type (cub, tet, hex, mono, tri, ...) {cub}
                                 -dr {dratio} : distortion ratio {0.02}
                                 -ndem {ndiv_emod} : number of devision for elastic moduli calc. {15}
                                 -Bmod : calculate Bmod or not {False}
+                                -relax : consider relaxation of atomic positions or not {False}
                                 -egap : extract band gap energy {False}
+                                -GW : perform GW calculation, only valid for code=ecalj case {False}
+                                -auto : automatic evaluation of elastic moduli & energy band gap {False}
                         [-ccd]  -pccd : sw_plt_ccd == True {False}
                                 -Eabs {Eabs0} : absorption energy by first-principles calc. {2.146}
                                 -Eem {Eem0} : emission energy by first-principles calc. {1.702}
                                 -FC {EFCg} : Frank-Condon params. for ground state energy curve {0.214}
-                                -dQ {deltaQ} : difference of the configuration coordinate b/w exited & ground {1.0}
+                                -dQ {dQ} : difference of the configuration coordinate b/w exited & ground for intemediate state calculations {1.0}
                                 -I0 {I0} : Intensity of the spectrum {1.0}
                                 -gamma {gamma} : broadness params. of Lorentzian {1.0e-5}
                                 -eg : generate intermediate structures b/w excited & ground or not {False}
@@ -359,18 +438,22 @@ class subs:
                                 -emax_ccd {emax_ccd} : energy max. for plotting {3.0}
                                 -tempmin {tempmin} : temperature min. {1.0}
                                 -tempmax {tempmax} : temperature max. {1.0e3}
+                                -temp {temp} : temperature {298.0}
                                 -nmax {nmax} : cut-off number of summation, larger value is plausible {30}
-                                -nde {ndiv_e} : number of devision for energy {1.0e6}
-                                -ndt {ndiv_temp} : number of devision for temperature {1.0e3}
+                                -nde {ndiv_e} : number of devision for energy {1000000}
+                                -ndtmp {ndiv_temp} : number of devision for temperature {1000}
                                 -ndeg {ndiv_eg} : number of devision for intermediate structures {12}
                         [-ph]   -pph : sw_plt_ph == True {False}
                                 -ndim {ndim[1:3]} : number of dimension for generating supercell {1 1 1}
                                 -HR {sw_HR} : switch for means to evaluate q_k (none, pos, force, both) {none}
                                 -phrun : perform phonon calc. or not {False}
-                                -nde_ph {ndiv_ph} : number of division for phonon spectrum {1.0e6}
+                                -nde_ph {ndiv_ph} : number of division for phonon spectrum {1000000}
                                 -emin_ph {emin_ph} : energy min. for phonon spectrum {0.0}
                                 -emax_ph {emax_ph} : energy max. for phonon spectrum {1.0}
-                                -sigma {sigma} : standard derivation of Gaussian {6.0e-3} """
+                                -sigma {sigma} : standard derivation of Gaussian {6.0e-3}
+                                -tinf {tinf} : inf value of t {1.0e3}
+                                -ndt {ndiv_t} : number of division for t {1000000}
+                                -gsp {gamma_spec} : broadening parameter of spectrum {1.0e-5} """
             print(helpmessage)
             sys.exit()
 
@@ -386,6 +469,8 @@ class subs:
             self.nc:int = int(args[args.index("-nc")+1])
         if ( "-exe" in args ):
             self.exe:str = args[args.index("-exe")+1]
+        if ( "-code" in args ):
+            self.code:str = args[args.index("-code")+1]
         if ( "-p" in args ):
             self.sw_plt_emod:bool = True
             self.sw_plt_ccd:bool = True
@@ -405,8 +490,14 @@ class subs:
             self.ndiv_emod:int = int(args[args.index("-ndem")+1])
         if ( "-Bmod" in args ):
             self.sw_Bmod:bool = True
+        if ( "-relax" in args ):
+            self.sw_relax:bool = True
         if ( "-egap" in args ):
             self.sw_egap:bool = True
+        if ( "-GW" in args ):
+            self.sw_GW:bool = True
+        if ( "-auto" in args ):
+            self.sw_auto:bool = True
         """ ccd """
         if ( "-Eabs" in args ):
             self.Eabs0:float = float(args[args.index("-Eabs")+1])
@@ -436,12 +527,14 @@ class subs:
             self.tempmin:float = float(args[args.index("-tempmin")+1])
         if ( "-tempmax" in args ):
             self.tempmax:float = float(args[args.index("-tempmax")+1])
+        if ( "-temp" in args ):
+            self.temp:float = float(args[args.index("-temp")+1])
         if ( "-nmax" in args ):
             self.nmax:int = int(args[args.index("-nmax")+1])
         if ( "-nde" in args ):
             self.ndiv_e:int = int(args[args.index("-nde")+1])
-        if ( "-ndt" in args ):
-            self.ndiv_temp:int = int(args[args.index("-ndt")+1])
+        if ( "-ndtmp" in args ):
+            self.ndiv_temp:int = int(args[args.index("-ndtmp")+1])
         if ( "-ndeg" in args ):
             self.ndiv_eg:int = int(args[args.index("-ndeg")+1])
         """ ph """
@@ -460,6 +553,12 @@ class subs:
             self.emax_ph:float = float(args[args.index("-emax_ph")+1])
         if ( "-sigma" in args ):
             self.sigma:float = float(args[args.index("-sigma")+1])
+        if ( "-tinf" in args ):
+            self.tinf:float = float(args[args.index("-tinf")+1])
+        if ( "-gsp" in args ):
+            self.gamma_spec:float = float(args[args.index("-gsp")+1])
+        if ( "-ndt" in args ):
+            self.ndiv_t:int = int(args[args.index("-ndt")+1])
 
     ### ----------------------------------------------------------------------------- ###
     def ck_prms(self):
@@ -473,13 +572,17 @@ class subs:
         print("* sw_run_ph: ", self.sw_run_ph)
         print("* nc: ", self.nc)
         print("* exe: ", self.exe)
+        print("* code: ", self.code)
         print("*")
         if ( self.sw_run_emod ):
             print("*** elastic moduli parameters ***")
             print("* brav: ", self.brav)
             print("* sw_plt_emod: ", self.sw_plt_emod)
             print("* sw_Bmod: ", self.sw_Bmod)
+            print("* sw_relax: ", self.sw_relax)
             print("* sw_egap: ", self.sw_egap)
+            print("* sw_GW: ", self.sw_GW)
+            print("* sw_auto: ", self.sw_auto)
             print("* dratio: ", self.dratio)
             print("* ndiv_emod: ", self.ndiv_emod)
             print("*")
@@ -500,6 +603,7 @@ class subs:
             print("* emax_ccd (eV): ", self.emax_ccd)
             print("* tempmin (K): ", self.tempmin)
             print("* tempmax (K): ", self.tempmax)
+            print("* temp (K): ", self.temp)
             print("* nmax: ", self.nmax)
             print("* ndiv_e: ", self.ndiv_e)
             print("* ndiv_temp: ", self.ndiv_temp)
@@ -508,13 +612,23 @@ class subs:
         if ( self.sw_run_ph ):
             print("*** phonon parameters ***")
             print("* ndim: ", self.ndim)
-            print("* emin_ph: ", self.emin_ph)
-            print("* emax_ph: ", self.emax_ph)
+            print("* emin_ph (eV): ", self.emin_ph)
+            print("* emax_ph (eV): ", self.emax_ph)
             print("* sigma: ", self.sigma)
+            print("* tinf: ", self.tinf)
+            print("* ndiv_t: ", self.ndiv_t)
+            print("* gamma_spec: ", self.gamma_spec)
             print("* sw_HR: ", self.sw_HR)
             print("* sw_phrun: ", self.sw_phrun)
             print("*")
         print("* --- Finish check parameters --- *")
+
+    ### ----------------------------------------------------------------------------- ###
+    def set_prms(self, material:str, bravias:str):
+        """ set parameters """
+    
+        self.mat:str = material
+        self.brav:str = bravias
         
     ### ----------------------------------------------------------------------------- ###
     def get_POSCAR(self, fn:str):

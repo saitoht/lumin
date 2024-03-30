@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import subprocess as sub
+from scipy import integrate
 import sys, os, pathlib, yaml
 import cls_subs as subs
 
@@ -17,6 +18,7 @@ class ph:
             ph.fz_phonon(self)
         if ( not prms.sw_HR == "none" ):
             ph.Huang_Rhys(self)
+            ph.plt_specfunc(self)
         print("* --- Finish Class Phonon --- *")
         print("*")
 
@@ -118,6 +120,8 @@ class ph:
                 self.Stot_force += self.Sk_force[i]
         print("* Stot from position: ", self.Stot)
         print("* Stot from force: ", self.Stot_force)
+        self.DWfac:float = np.exp(-self.Stot)
+        print("* Debye-Waller factor: ", self.DWfac)
         if ( prms.sw_plt_ph ):
             print("* --- Plot S(hbar*omega) from position --- *")
             fig = plt.figure()
@@ -128,6 +132,7 @@ class ph:
             ax2 = ax1.twinx()
             ax2.set_ylabel(r"$\mathrm{S_k}$")
             ax2.bar(1000.*self.freq, self.Sk, color="mediumblue", width=0.15)
+            plt.savefig("Sk_pos.pdf")
             plt.show()
             if ( sw_HR in {"force","both"} ):
                 print("* --- Plot S(hbar*omega) from force --- *")
@@ -139,6 +144,30 @@ class ph:
                 ax2 = ax1.twinx()
                 ax2.set_ylabel(r"$\mathrm{S_k}$")
                 ax2.bar(1000.*self.freq, self.Sk_force, color="mediumblue", width=0.15)
+                plt.savefig("Sk_force.pdf")
                 plt.show()
         print("* --- Finish Huang Rhys parameter --- *")
+        print("*")
+
+    ### ----------------------------------------------------------------------------- ###
+    def plt_specfunc(self):
+        """ plot spectral function """
+
+        print("* --- PLOT SPECTRAL FUNCTION --- *")
+        tarr:float = np.linspace(-prms.tinf, prms.tinf, 2*prms.ndiv_t)
+        energy:float = np.linspace(prms.emin_ph, prms.emax_ph, prms.ndiv_ph)
+        integrandS:float = [self.Sspec * np.exp(-1.j*(energy/prms.hbareV)*t) for t in tarr]
+        St:float = np.array([integrate.simps(integrandS[i,:], energy[:]) for i,t in enumerate(tarr)])
+        genfunc:float = np.array([np.exp(Stt-self.Stot) for Stt in St])
+        integrandt:float = np.array([genfunc*np.exp(1.j*(ene/prms.hbareV)*tarr-prms.gamma_spec*np.abs(tarr)) for ene in enumerate(energy)])
+        self.Aspec:float = (1./(2.*np.pi)) * np.array([integrate.simps(integrandt[i,:],tarr) for i in range(energy)])
+        if ( prms.sw_plt_ph ):
+            fig = plt.figure()
+            plt.xlabel("Energy (eV)")
+            plt.ylabel("Intensity (arbitrary unit)")
+            plt.plot(energy, self.Aspec, color="mediumblue")
+            plt.savefig("Spec_MultiD.pdf")
+            plt.show()
+        else:
+            print("* --- NO PLOT --- *")
         print("*")
