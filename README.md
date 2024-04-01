@@ -1,12 +1,15 @@
 # lumin
-Simulate luminescent properties of materials using the information from first-principles calculations
+Simulate luminescent properties of materials using the information from first-principles calculations.
 
 ## Requirement
 For first-principles calculations
 - Quantum ESPRESSO
+- (ecalj)
 
 For Phonon calculations
 - Phonopy
+- (Quantum ESPRESSO)
+- (alamode)
 
 For Python modules
 - numpy
@@ -17,7 +20,12 @@ For Python modules
 - yaml
 - sklearn
 
-## Usage
+## Installation
+Type the following command to install.
+```shell-session
+git clone https://github.com/saitoht/lumin.git
+```
+
 Before you use the program "lumin", you should activate the path by writing
 ```shell-session
 export PATH=$PATH:$HOME/lumin
@@ -28,13 +36,15 @@ After that, you should execute
 source ~/.bashrc
 ```
 to reflect the settings or exit the terminal once.
+Then, "lumin" command will be activated.
 
-In the case of ZSH shell, you will see ~/.zshrc instead of ~/.bashrc.
+In the case of ZSH, you will see ~/.zshrc instead of ~/.bashrc.
 You can check which SHELL you are using by the following command.
 ```shell-session
 echo $SHELL
 ```
 
+## Usage
 For elastic moduli calculations
 ```shell-session
 lumin -emod
@@ -59,8 +69,13 @@ See examples directory
 - Ex02: Phonon Calculation of GaAs
 - Ex03: Configuration Coordinate Model of Ruby
 - Ex04: Elastic Moduli of TiB2
-- Ex05: Multi-D CCD model from Phonon spectrum
+- (Ex05: Multi-D CCD model from Phonon spectrum)
 - Ex06: Anharmonic effects in 1D-CCD model
+- (Ex07: Automatic evaluation of Elastic Moduli & Energy Band Gap)
+- (Ex08: Raman process?)
+- (Ex09: Detailed Analysis on Adiabatic Energy Curve)
+- (Ex10: Luminescence from Charged Defects)
+- (Ex11: Nephelauxetic effects)
 
 ## References
 For elastic moduli calculations
@@ -76,3 +91,11 @@ For phonon calculations
 For configuration coordinate diagram
 - M. A. Reshchikov & H. Morkoc, Luminescence properties of defects in GaN, J. Appl. Phys. 97 (2005) 061301.
 - Y. Jia, A. Miglio, S. Ponce, M. Mikami, & X. Gonze, First-principles study of the luminescence of Eu2+-doped phosphors, PRB 96 (2017) 125132.
+
+## Things to do
+- ecalj version for emod
+- automatic calculation of elastic modulus & band gap energy
+- optical spectra at specific temperature, plot figures (correspondence in color & wavelength)
+- Excitons, Polarons & Polaritons???
+- Jahn-Teller effects?
+- connection to eigloc code

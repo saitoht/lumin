@@ -14,25 +14,31 @@ class emod:
     def __init__(self):
         """ Constructor of emod """
         
-        print("* --- Start Elastic Moduli calculation--- *")
+        print("* --- Start Elastic Moduli calculation --- *")
         print("*")
         if ( prms.sw_relax ):
             exejob:str = "relax"
         else:
             exejob:str = "scf"
         p = pathlib.Path("{mat}.{job}_Bmod.in".format(mat=prms.mat,job=exejob))
-        if ( p.exists() ):
+        if ( p.exists() and prms.code=="qe" ):
             sub.run(["cp {mat}.{job}_Bmod.in {mat}.{job}.in0".format(mat=prms.mat,job=exejob)], shell=True)
+        p = pathlib.Path("ctrl_Bmod.{mat}".format(mat=prms.mat))
+        if ( p.exists() and prms.code=="ecalj" ):
+            sub.run(["cp ctrl_Bmod.{mat} ctrl.{mat}".format(mat=prms.mat)], shell=True)
         if ( prms.sw_Bmod ):
             emod.get_Bmod(self)
         p = pathlib.Path("{mat}.{job}_Emod.in".format(mat=prms.mat,job=exejob))
-        if ( p.exists() ):
+        if ( p.exists() and prms.code=="qe" ):
             sub.run(["cp {mat}.{job}_Emod.in {mat}.{job}.in0".format(mat=prms.mat,job=exejob)], shell=True)
+        p = pathlib.Path("ctrl_Emod.{mat}".format(mat=prms.mat))
+        if ( p.exists() and prms.code=="ecalj" ):
+            sub.run(["cp ctrl_Emod.{mat} ctrl.{mat}".format(mat=prms.mat)], shell=True)
         emod.get_Econst(self)
         emod.calc_Debye_temp(self)
         if ( prms.sw_egap ):
             emod.get_eig(self)
-        print("* --- Finish Elastic Moduli calculation--- *")
+        print("* --- Finish Elastic Moduli calculation --- *")
         print("*")
 
     ### ----------------------------------------------------------------------------- ###
@@ -80,13 +86,16 @@ class emod:
                     skip:bool = True
                 else:
                     data:str = np.loadtxt("tote.tmp",dtype=str,unpack=True,ndmin=0)
-                    if ( nsp == 1 ):
-                        self.te:float = float(data[1].replace("ehk(eV)=",""))
-                    elif ( nsp == 2 ):
-                        if ( data[1] == "mmom=" ):
-                            self.te:float = float(data[3].replace("ehk(eV)=",""))
+                    if ( prms.nspin == 1 ):
+                        if ( data[1][0:8] == "ehk(eV)=" ):
+                            te:float = float(data[1].replace("ehk(eV)=",""))/prms.Ry
                         else:
-                            self.te:float = float(data[2].replace("ehk(eV)=",""))
+                            te:float = float(data[1].replace("ehf(eV)=",""))/prms.Ry
+                    elif ( prms.nspin == 2 ):
+                        if ( data[1] == "mmom=" ):
+                            te:float = float(data[3].replace("ehk(eV)=",""))/prms.Ry
+                        else:
+                            te:float = float(data[2].replace("ehk(eV)=",""))/prms.Ry
                     else:
                         pass
         os.chdir("../")
@@ -109,7 +118,7 @@ class emod:
         p = pathlib.Path(fn)
         if ( not p.exists() ):
             with open(fn,"w") as f:
-                f.write("### delta  alat(Bohr)  volume(Bohr^3)  tote(Ry) \n")
+                f.write("### 1:delta  2:alat(Bohr)  3:volume(Bohr^3)  4:tote(Ry) \n")
         for i, al in enumerate(alat):
             ndir:str = "alat"+str(round(al,6))
             p = pathlib.Path(ndir)
@@ -136,7 +145,7 @@ class emod:
         p = pathlib.Path(fn)
         if ( not p.exists() ):
             with open(fn,"w") as f:
-                f.write("### delta  alat(Bohr)  volume(Bohr^3)  tote(Ry) \n")
+                f.write("### 1:delta  2:alat(Bohr)  3:volume(Bohr^3)  4:tote(Ry) \n")
         (alat, plat0, elements, nelems, natm, pos, volume0) = prms.get_POSCAR("../POSCAR0")
         for i, ep in enumerate(epsilon):
             ndir:str = "delta"+str(round(ep,6))
@@ -848,15 +857,16 @@ class emod:
         for i in range(len(mat_lists)):
             prms.set_prms(mat_lists[i],brav_lists[i])
             sub.run(["mkdir -p RESULTS/"+prms.mat],shell=True)
-            sub.run(["cp POS/POSCAR_{mat} RESULTS/{mat}/POSCAR".format(mat=prms.mat)],shell=True)
+            sub.run(["cp POS/POSCAR_{mat} RESULTS/{mat}/POSCAR0".format(mat=prms.mat)],shell=True)
             os.chdir("RESULTS/"+prms.mat)
-            sub.run(["vasp2ctrl POSCAR"],shell=True)
-            sub.run(["mv ctrls.POSCAR.vasp2ctrl ctrls."+prms.mat],shell=True)
-            (alat,plat,elems,nele,natm,pos,vol) = prms.get_POSCAR("POSCAR")
+            sub.run(["vasp2ctrl POSCAR0"],shell=True)
+            sub.run(["mv ctrls.POSCAR0.vasp2ctrl ctrls."+prms.mat],shell=True)
+            (alat,plat,elems,nele,natm,pos,vol) = prms.get_POSCAR("POSCAR0")
             if ( "F" in elems ):
                 sub.run(["sed -i -e 's/F/F0/g' ctrls."+prms.mat],shell=True)
                 sub.run(["sed -i -e 's/F0e/Fe/g' ctrls."+prms.mat],shell=True)
                 with open("ctrls."+prms.mat,"a") as f:
+                    f.write("\n")
                     f.write("SPEC \n")
                     for ele in elems:
                         if ( ele == "F" ):
@@ -874,13 +884,14 @@ class emod:
             sub.run(["{exe}/job_pdos {mat} -np {nc}".format(exe=prms.exe,mat=prms.mat,nc=prms.nc)],shell=True)
             sub.run(["cp *.{mat} LDA".format(mat=prms.mat)],shell=True)
             sub.run(["mkGWinput {mat}".format(mat=prms.mat)],shell=True)
-            sub.run(["{exe}/gwsc {mat} -np {nc}".format(exe=prms.exe,mat=prms.mat,nc=prms.nc)],shell=True)
-
+            sub.run(["cp GWinput.tmp GWinput"],shell=True)
+            sub.run(["{exe}/gwsc {itr} {mat} -np {nc}".format(exe=prms.exe,itr=prms.GWitr,mat=prms.mat,nc=prms.nc)],shell=True)
+            
     ### ----------------------------------------------------------------------------- ###
     def get_kmesh(self):
         """ get appropriate kmesh """
 
-        (alat,plat,elems,nele,natm,pos,vol) = prms.get_POSCAR("POSCAR")
+        (alat,plat,elems,nele,natm,pos,vol) = prms.get_POSCAR("POSCAR0")
         bvec:float = alat*alat * (2.*np.pi/vol) * np.array([np.cross(plat[1],plat[2]),np.cross(plat[2],plat[0]),np.cross(plat[0],plat[1])])
         bvol:float = abs(np.dot(bvec[0],np.cross(bvec[1],bvec[2])))
         ### standard ==>> Si 12*12*12

@@ -1,0 +1,10 @@
+&sys
+ mat=c_dia
+ nc=20
+ exe=$HOME/ecaljdev/bin
+ code=ecalj
+&emod
+ brav=cub
+ sw_Bmod=1
+ sw_plt_ccd=0
+ ndiv_emod=7

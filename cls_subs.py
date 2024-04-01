@@ -84,6 +84,7 @@ class subs:
         self.nc:int = 20
         self.exe:str = "$HOME/qe/bin"
         self.code:str = "qe"
+        self.nspin:int = 1
         """ for emod """
         self.brav:str = "cub"
         self.sw_plt_emod:bool = False
@@ -193,6 +194,11 @@ class subs:
                         self.code:str = line[1]
                     else:
                         self.code:str = line[0].replace("code=","")
+                elif ( sw_sys and line[0][0:6] == "nspin=" ):
+                    if ( len(line) == 2 ):
+                        self.nspin:int = int(line[1])
+                    else:
+                        self.nspin:int = int(line[0].replace("nspin=",""))
                 else:
                     pass
 
@@ -413,6 +419,7 @@ class subs:
                                 -nc {nc} : number of cpu {20}
                                 -exe {exe} : execute path {$HOME/qe/bin}
                                 -code {code} : code for DFT (qe, ecalj) {qe}
+                                -nsp {nspin} : number of spin states under consideration {1}
                                 -p : sw_plt == True for all script {False}
                         [-emod] -pemod : sw_plt_emod == True {False}
                                 -brav {brav} : Bravias type (cub, tet, hex, mono, tri, ...) {cub}
@@ -471,6 +478,8 @@ class subs:
             self.exe:str = args[args.index("-exe")+1]
         if ( "-code" in args ):
             self.code:str = args[args.index("-code")+1]
+        if ( "-nsp" in args ):
+            self.nspin:int = int(args[args.index("-nsp")+1])
         if ( "-p" in args ):
             self.sw_plt_emod:bool = True
             self.sw_plt_ccd:bool = True
@@ -573,6 +582,7 @@ class subs:
         print("* nc: ", self.nc)
         print("* exe: ", self.exe)
         print("* code: ", self.code)
+        print("* nspin: ", self.nspin)
         print("*")
         if ( self.sw_run_emod ):
             print("*** elastic moduli parameters ***")
