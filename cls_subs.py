@@ -8,23 +8,43 @@ class subs:
     ### ----------------------------------------------------------------------------- ###
     def __init__(self):
         """ Constructor: initialize parameters"""
+
+        """ Setting for plot """
+        plt.rcParams['font.family'] = 'Helvetica'
+        plt.rcParams["xtick.labelsize"] = 15.0
+        plt.rcParams["ytick.labelsize"] = 15.0
+        plt.rcParams["xtick.major.pad"] = 5
+        plt.rcParams["ytick.major.pad"] = 5
+        plt.rcParams["axes.labelsize"] = 15.0
+        plt.rcParams["axes.linewidth"] = 1.0
+        plt.rcParams["axes.labelpad"] = 6
+        plt.rcParams["xtick.direction"] = "in" 
+        plt.rcParams["ytick.direction"] = "in"
+        plt.rcParams["xtick.major.width"] = 1.0
+        plt.rcParams["ytick.major.width"] = 1.0
+        plt.rcParams["xtick.minor.width"] = 0.5
+        plt.rcParams["ytick.minor.width"] = 0.5
+        plt.rcParams["xtick.major.size"] = 4.5
+        plt.rcParams["ytick.major.size"] = 4.5
+        plt.rcParams["xtick.minor.size"] = 3.0
+        plt.rcParams["ytick.minor.size"] = 3.0
         
         """ Physical constatns """
-        self.Bohr:float = 0.529177210903        # \AA
-        self.Ry:float = 13.6057039763           # eV
-        self.uatm:float = 1.66054e-27           # kg
-        self.me:float = 9.1093837e-31           # kg
-        self.hconst:float = 4.135667696e-15     # eV s
-        self.kB:float = 8.617333262e-5          # eV K^-1
-        self.NA:float = 6.02214e23              # /mol
-        self.hbar:float = 1.05457182e-34        # J s
-        self.hbareV:float = 6.582119569e-16     # eV s
-        self.ep:float = 1.60217663e-19          # C
-        self.AU2GPa:float = 14710.513242194795  # A.U. to GPa
-        self.eV2cm:float = 8065.73              # cm^-1
-        self.THz2eV:float = 0.00413566553853599 # THz to eV
-        self.fc2THz:float = 15.633302           # factor to convert into THz
-        self.fceV2nm:float = 1239.8             # factor to convert eV into nm
+        self.Bohr = 0.529177210903        # \AA
+        self.Ry = 13.6057039763           # eV
+        self.uatm = 1.66054e-27           # kg
+        self.me = 9.1093837e-31           # kg
+        self.hconst = 4.135667696e-15     # eV s
+        self.kB = 8.617333262e-5          # eV K^-1
+        self.NA = 6.02214e23              # /mol
+        self.hbar = 1.05457182e-34        # J s
+        self.hbareV = 6.582119569e-16     # eV s
+        self.ep = 1.60217663e-19          # C
+        self.AU2GPa = 14710.513242194795  # A.U. to GPa
+        self.eV2cm = 8065.73              # cm^-1
+        self.THz2eV = 0.00413566553853599 # THz to eV
+        self.fc2THz = 15.633302           # factor to convert into THz
+        self.fceV2nm = 1239.8             # factor to convert eV into nm
         
         """ element mass """
         self.ELEMS_MASS = {"H":  1.00798, "He": 4.0026,  "Li": 6.968,   "Be": 9.01218, "B":  10.814,
@@ -80,58 +100,66 @@ class subs:
 
         """ default values """
         """ for system """
-        self.mat:int = ""
-        self.nc:int = 20
-        self.exe:str = "$HOME/qe/bin"
-        self.code:str = "qe"
-        self.nspin:int = 1
+        self.mat = ""
+        self.nc = 20
+        self.exe = "$HOME/qe/bin"
+        self.code = "qe"
+        self.nspin = 1
         """ for emod """
-        self.brav:str = "cub"
-        self.sw_plt_emod:bool = False
-        self.sw_Bmod:bool = False
-        self.sw_relax:bool = False
-        self.sw_egap:bool = False
-        self.sw_GW:bool = False
-        self.sw_auto:bool = False
-        self.dratio:float = 0.02
-        self.ndiv_emod:int = 15
+        self.brav = "cub"
+        self.sw_plt_emod = False
+        self.sw_Bmod = False
+        self.sw_relax = False
+        self.sw_egap = False
+        self.sw_GW = False
+        self.sw_auto = False
+        self.dratio = 0.02
+        self.ndiv_emod = 15
         """ for ccd """
-        self.gamma:float = 1.0e-5
-        self.Eabs0:float = 2.146
-        self.Eem0:float = 1.702
-        self.EFCg:float = 0.214
-        self.dQ:float = 1.0
-        self.sw_plt_ccd:bool = False
-        self.sw_eg:bool = False
-        self.sw_unit:str = "eV"
-        self.stateg:str = "4A2g"
-        self.statee:str = "4T2g"
-        self.emin_ccd:float = 1.0
-        self.emax_ccd:float = 3.0
-        self.tempmin:float = 1.0
-        self.tempmax:float = 1000.0
-        self.temp:float = 298.0
-        self.I0:float = 1.0
-        self.nmax:int = 30
-        self.ndiv_e:int = 1000000
-        self.ndiv_temp:int = 1000
-        self.ndiv_eg:int = 12
+        self.gamma = 1.0e-5
+        self.Eabs0 = 2.146
+        self.Eem0 = 1.702
+        self.EFCg = 0.214
+        self.dQ = 1.0
+        self.include = None
+        self.fac_include = 1.0
+        self.sw_plt_ccd = False
+        self.sw_eg = False
+        self.sw_anharm = False
+        self.sw_unit = "eV"
+        self.sw_2dim = False
+        self.sw_fix = "vertex"
+        self.curvature = None
+        self.dim_fit = 3
+        self.stateg = "4A2g"
+        self.statee = "4T2g"
+        self.emin_ccd = 1.0
+        self.emax_ccd = 3.0
+        self.tempmin = 1.0
+        self.tempmax = 1000.0
+        self.temp = 298.0
+        self.sw_spec_temp = False
+        self.I0 = 1.0
+        self.nmax = 30
+        self.ndiv_e = 1000000
+        self.ndiv_temp = 1000
+        self.ndiv_eg = 12
         """ for ph """
-        self.ndim:int = [1,1,1]
-        self.sw_HR:str = "none"
-        self.sw_phrun:bool = False
-        self.sw_plt_ph:bool = False
-        self.sigma:float = 6.0e-3
-        self.ndiv_ph:int = 1000000
-        self.emin_ph:float = 0.0
-        self.emax_ph:float = 1.0
-        self.tinf:float = 1.0e3
-        self.ndiv_t:float = 1000000
-        self.gamma_spec:float = 1.0e-5
+        self.ndim = [1,1,1]
+        self.sw_HR = "none"
+        self.sw_phrun = False
+        self.sw_plt_ph = False
+        self.sigma = 6.0e-3
+        self.ndiv_ph = 1000000
+        self.emin_ph = 0.0
+        self.emax_ph = 1.0
+        self.tinf = 1.0e3
+        self.ndiv_t = 1000000
+        self.gamma_spec = 1.0e-5
         """ switch for execution """
-        self.sw_run_emod:bool = False
-        self.sw_run_ccd:bool = False
-        self.sw_run_ph:bool = False
+        self.sw_run_emod = False
+        self.sw_run_ccd = False
+        self.sw_run_ph = False
         
         """ get parameters """
         subs.get_prms(self)
@@ -140,279 +168,319 @@ class subs:
     def get_prms(self):
         """ get parameters for calculations """
         
-        sw_sys:bool = False
-        sw_emod:bool = False
-        sw_ph:bool = False
-        sw_ccd:bool = False
+        sw_sys = False
+        sw_emod = False
+        sw_ph = False
+        sw_ccd = False
         p = pathlib.Path("LUMIN")
         if ( p.exists() ):
             with open("LUMIN","r") as f:
-                inputs:str = f.readlines()
+                inputs = f.readlines()
             for ip in inputs:
-                line:str = [ipp.replace("\n","") for ipp in ip.split()]
+                line = [ipp.replace("\n","") for ipp in ip.split()]
                 if ( line[0] == "&sys" ):
-                    sw_sys:bool = True
-                    sw_emod:bool = False
-                    sw_ph:bool = False
-                    sw_ccd:bool = False
+                    sw_sys = True
+                    sw_emod = False
+                    sw_ph = False
+                    sw_ccd = False
                 elif ( line[0] == "&emod" ):
-                    sw_sys:bool = False
-                    sw_emod:bool = True
-                    sw_ph:bool = False
-                    sw_ccd:bool = False
+                    sw_sys = False
+                    sw_emod = True
+                    sw_ph = False
+                    sw_ccd = False
                 elif ( line[0] == "&ph" ):
-                    sw_sys:bool = False
-                    sw_emod:bool = False
-                    sw_ph:bool = True
-                    sw_ccd:bool = False
+                    sw_sys = False
+                    sw_emod = False
+                    sw_ph = True
+                    sw_ccd = False
                 elif ( line[0] == "&ccd" ):
-                    sw_sys:bool = False
-                    sw_emod:bool = False
-                    sw_ph:bool = False
-                    sw_ccd:bool = True
+                    sw_sys = False
+                    sw_emod = False
+                    sw_ph = False
+                    sw_ccd = True
                 else:
                     pass
                 
                 """ system """
                 if ( sw_sys and line[0][0:4] == "mat=" ):
                     if ( len(line) == 2 ):
-                        self.mat:str = line[1]
+                        self.mat = line[1]
                     else:
-                        self.mat:str = line[0].replace("mat=","")
+                        self.mat = line[0].replace("mat=","")
                 elif ( sw_sys and line[0][0:3] == "nc=" ):
                     if ( len(line) == 2 ):
-                        self.nc:int = int(line[1])
+                        self.nc = int(line[1])
                     else:
-                        self.nc:int = int(line[0].replace("nc=",""))
+                        self.nc = int(line[0].replace("nc=",""))
                 elif ( sw_sys and line[0][0:4] == "exe=" ):
                     if ( len(line) == 2 ):
-                        self.exe:str = line[1]
+                        self.exe = line[1]
                     else:
-                        self.exe:str = line[0].replace("exe=","")
+                        self.exe = line[0].replace("exe=","")
                 elif ( sw_sys and line[0][0:5] == "code=" ):
                     if ( len(line) == 2 ):
-                        self.code:str = line[1]
+                        self.code = line[1]
                     else:
-                        self.code:str = line[0].replace("code=","")
+                        self.code = line[0].replace("code=","")
                 elif ( sw_sys and line[0][0:6] == "nspin=" ):
                     if ( len(line) == 2 ):
-                        self.nspin:int = int(line[1])
+                        self.nspin = int(line[1])
                     else:
-                        self.nspin:int = int(line[0].replace("nspin=",""))
+                        self.nspin = int(line[0].replace("nspin=",""))
                 else:
                     pass
 
                 """ elastic moduli """
                 if ( sw_emod and line[0][0:5] == "brav=" ):
                     if ( len(line) == 2 ):
-                        self.brav:str = line[1]
+                        self.brav = line[1]
                     else:
-                        self.brav:str = line[0].replace("brav=","")
+                        self.brav = line[0].replace("brav=","")
                 elif ( sw_emod and line[0][0:12] == "sw_plt_emod=" ):
                     if ( len(line) == 2 ):
-                        self.sw_plt_emod:bool = bool(int(line[1]))
+                        self.sw_plt_emod = bool(int(line[1]))
                     else:
-                        self.sw_plt_emod:bool = bool(int(line[0].replace("sw_plt_emod=","")))
+                        self.sw_plt_emod = bool(int(line[0].replace("sw_plt_emod=","")))
                 elif ( sw_emod and line[0][0:8] == "sw_Bmod=" ):
                     if ( len(line) == 2 ):
-                        self.sw_Bmod:bool = bool(int(line[1]))
+                        self.sw_Bmod = bool(int(line[1]))
                     else:
-                        self.sw_Bmod:bool = bool(int(line[0].replace("sw_Bmod=","")))
+                        self.sw_Bmod = bool(int(line[0].replace("sw_Bmod=","")))
                 elif ( sw_emod and line[0][0:9] == "sw_relax=" ):
                     if ( len(line) == 2 ):
-                        self.sw_relax:bool = bool(int(line[1]))
+                        self.sw_relax = bool(int(line[1]))
                     else:
-                        self.sw_relax:bool = bool(int(line[0].replace("sw_relax=","")))
+                        self.sw_relax = bool(int(line[0].replace("sw_relax=","")))
                 elif ( sw_emod and line[0][0:5] == "sw_GW=" ):
                     if ( len(line) == 2 ):
-                        self.sw_GW:bool = bool(int(line[1]))
+                        self.sw_GW = bool(int(line[1]))
                     else:
-                        self.sw_GW:bool = bool(int(line[0].replace("sw_GW=","")))
+                        self.sw_GW = bool(int(line[0].replace("sw_GW=","")))
                 elif ( sw_emod and line[0][0:8] == "sw_auto=" ):
                     if ( len(line) == 2 ):
-                        self.sw_auto:bool = bool(int(line[1]))
+                        self.sw_auto = bool(int(line[1]))
                     else:
-                        self.sw_auto:bool = bool(int(line[0].replace("sw_auto=","")))
+                        self.sw_auto = bool(int(line[0].replace("sw_auto=","")))
                 elif ( sw_emod and line[0][0:8] == "sw_egap=" ):
                     if ( len(line) == 2 ):
-                        self.sw_egap:bool = bool(int(line[1]))
+                        self.sw_egap = bool(int(line[1]))
                     else:
-                        self.sw_egap:bool = bool(int(line[0].replace("sw_egap=","")))
+                        self.sw_egap = bool(int(line[0].replace("sw_egap=","")))
                 elif ( sw_emod and line[0][0:7] == "dratio=" ):
                     if ( len(line) == 2 ):
-                        self.dratio:float = float(line[1])
+                        self.dratio = float(line[1])
                     else:
-                        self.dratio:float = float(line[0].replace("dratio=",""))
+                        self.dratio = float(line[0].replace("dratio=",""))
                 elif ( sw_emod and line[0][0:10] == "ndiv_emod=" ):
                     if ( len(line) == 2 ):
-                        self.ndiv_emod:int = int(line[1])
+                        self.ndiv_emod = int(line[1])
                     else:
-                        self.ndiv_emod:int = int(line[0].replace("ndiv_emod=",""))
+                        self.ndiv_emod = int(line[0].replace("ndiv_emod=",""))
                 else:
                     pass
 
                 """ configuration coordinate diagram """
                 if ( sw_ccd and line[0][0:6] == "Eabs0=" ):
                     if ( len(line) == 2 ):
-                        self.Eabs0:float = float(line[1])
+                        self.Eabs0 = float(line[1])
                     else:
-                        self.Eabs0:float = float(line[0].replace("Eabs0=",""))
+                        self.Eabs0 = float(line[0].replace("Eabs0=",""))
                 elif ( sw_ccd and line[0][0:5] == "Eem0=" ):
                     if ( len(line) == 2 ):
-                        self.Eem0:float = float(line[1])
+                        self.Eem0 = float(line[1])
                     else:
-                        self.Eem0:float = float(line[0].replace("Eem0=",""))
+                        self.Eem0 = float(line[0].replace("Eem0=",""))
                 elif ( sw_ccd and line[0][0:5] == "EFCg=" ):
                     if ( len(line) == 2 ):
-                        self.EFCg:float = float(line[1])
+                        self.EFCg = float(line[1])
                     else:
-                        self.EFCg:float = float(line[0].replace("EFCg=",""))
+                        self.EFCg = float(line[0].replace("EFCg=",""))
                 elif ( sw_ccd and line[0][0:3] == "dQ=" ):
                     if ( len(line) == 2 ):
-                        self.dQ:float = float(line[1])
+                        self.dQ = float(line[1])
                     else:
-                        self.dQ:float = float(line[0].replace("dQ=",""))
+                        self.dQ = float(line[0].replace("dQ=",""))
                 elif ( sw_ccd and line[0][0:3] == "I0=" ):
                     if ( len(line) == 2 ):
-                        self.I0:float = float(line[1])
+                        self.I0 = float(line[1])
                     else:
-                        self.I0:float = float(line[0].replace("I0=",""))
+                        self.I0 = float(line[0].replace("I0=",""))
                 elif ( sw_ccd and line[0][0:6] == "gamma=" ):
                     if ( len(line) == 2 ):
-                        self.gamma:float = float(line[1])
+                        self.gamma = float(line[1])
                     else:
-                        self.gamma:float = float(line[0].replace("gamma=",""))
+                        self.gamma = float(line[0].replace("gamma=",""))
                 elif ( sw_ccd and line[0][0:11] == "sw_plt_ccd=" ):
                     if ( len(line) == 2 ):
-                        self.sw_plt_ccd:bool = bool(int(line[1]))
+                        self.sw_plt_ccd = bool(int(line[1]))
                     else:
-                        self.sw_plt_ccd:bool = bool(int(line[0].replace("sw_plt_ccd=","")))
+                        self.sw_plt_ccd = bool(int(line[0].replace("sw_plt_ccd=","")))
                 elif ( sw_ccd and line[0][0:6] == "sw_eg=" ):
                     if ( len(line) == 2 ):
-                        self.sw_eg:bool = bool(int(line[1]))
+                        self.sw_eg = bool(int(line[1]))
                     else:
-                        self.sw_eg:bool = bool(int(line[0].replace("sw_eg=","")))
+                        self.sw_eg = bool(int(line[0].replace("sw_eg=","")))
+                elif ( sw_ccd and line[0][0:10] == "sw_anharm=" ):
+                    if ( len(line) == 2 ):
+                        self.sw_anharm = bool(int(line[1]))
+                    else:
+                        self.sw_anharm = bool(int(line[0].replace("sw_anharm=","")))
+                elif ( sw_ccd and line[0][0:13] == "sw_spec_temp=" ):
+                    if ( len(line) == 2 ):
+                        self.sw_spec_temp = bool(int(line[1]))
+                    else:
+                        self.sw_spec_temp = bool(int(line[0].replace("sw_spec_temp=","")))
                 elif ( sw_ccd and line[0][0:8] == "sw_unit=" ):
                     if ( len(line) == 2 ):
-                        self.sw_unit:str = line[1]
+                        self.sw_unit = line[1]
                     else:
-                        self.sw_unit:str = line[0].replace("sw_unit=","")
+                        self.sw_unit = line[0].replace("sw_unit=","")
+                elif ( sw_ccd and line[0][0:8] == "include=" ):
+                    if ( len(line) == 2 ):
+                        self.include = line[1]
+                    else:
+                        self.include = line[0].replace("include=","")
+                elif ( sw_ccd and line[0][0:12] == "fac_include=" ):
+                    if ( len(line) == 2 ):
+                        self.fac_include = float(line[1])
+                    else:
+                        self.fac_include = float(line[0].replace("fac_include=",""))
+                elif ( sw_ccd and line[0][0:8] == "sw_2dim=" ):
+                    if ( len(line) == 2 ):
+                        self.sw_2dim = bool(int(line[1]))
+                    else:
+                        self.sw_2dim = bool(int(line[0].replace("sw_2dim=","")))
+                elif ( sw_ccd and line[0][0:7] == "sw_fix=" ):
+                    if ( len(line) == 2 ):
+                        self.sw_fix = line[1]
+                    else:
+                        self.sw_fix = line[0].replace("sw_fix=","")
+                elif ( sw_ccd and line[0][0:10] == "curvature=" ):
+                    if ( len(line) == 2 ):
+                        self.curvature = float(line[1])
+                    else:
+                        self.curvature = float(line[0].replace("curvature=",""))
+                elif ( sw_ccd and line[0][0:8] == "dim_fit=" ):
+                    if ( len(line) == 2 ):
+                        self.dim_fit = int(line[1])
+                    else:
+                        self.dim_fit = int(line[0].replace("dim_fit=",""))
                 elif ( sw_ccd and line[0][0:7] == "stateg=" ):
                     if ( len(line) == 2 ):
-                        self.stateg:str = line[1]
+                        self.stateg = line[1]
                     else:
-                        self.stateg:str = line[0].replace("stateg=","")
+                        self.stateg = line[0].replace("stateg=","")
                 elif ( sw_ccd and line[0][0:7] == "statee=" ):
                     if ( len(line) == 2 ):
-                        self.statee:str = line[1]
+                        self.statee = line[1]
                     else:
-                        self.statee:str = line[0].replace("statee=","")
+                        self.statee = line[0].replace("statee=","")
                 elif ( sw_ccd and line[0][0:9] == "emin_ccd=" ):
                     if ( len(line) == 2 ):
-                        self.emin_ccd:float = float(line[1])
+                        self.emin_ccd = float(line[1])
                     else:
-                        self.emin_ccd:float = float(line[0].replace("emin_ccd=",""))
+                        self.emin_ccd = float(line[0].replace("emin_ccd=",""))
                 elif ( sw_ccd and line[0][0:9] == "emax_ccd=" ):
                     if ( len(line) == 2 ):
-                        self.emax_ccd:float = float(line[1])
+                        self.emax_ccd = float(line[1])
                     else:
-                        self.emax_ccd:float = float(line[0].replace("emax_ccd=",""))
+                        self.emax_ccd = float(line[0].replace("emax_ccd=",""))
                 elif ( sw_ccd and line[0][0:8] == "tempmin=" ):
                     if ( len(line) == 2 ):
-                        self.tempmin:float = float(line[1])
+                        self.tempmin = float(line[1])
                     else:
-                        self.tempmin:float = float(line[0].replace("tempmin=",""))
+                        self.tempmin = float(line[0].replace("tempmin=",""))
                 elif ( sw_ccd and line[0][0:8] == "tempmax=" ):
                     if ( len(line) == 2 ):
-                        self.tempmax:float = float(line[1])
+                        self.tempmax = float(line[1])
                     else:
-                        self.tempmax:float = float(line[0].replace("tempmax=",""))
+                        self.tempmax = float(line[0].replace("tempmax=",""))
                 elif ( sw_ccd and line[0][0:8] == "temp=" ):
                     if ( len(line) == 2 ):
-                        self.temp:float = float(line[1])
+                        self.temp = float(line[1])
                     else:
-                        self.temp:float = float(line[0].replace("temp=",""))
+                        self.temp = float(line[0].replace("temp=",""))
                 elif ( sw_ccd and line[0][0:5] == "nmax=" ):
                     if ( len(line) == 2 ):
-                        self.nmax:int = int(line[1])
+                        self.nmax = int(line[1])
                     else:
-                        self.nmax:int = int(line[0].replace("nmax=",""))
+                        self.nmax = int(line[0].replace("nmax=",""))
                 elif ( sw_ccd and line[0][0:7] == "ndiv_e=" ):
                     if ( len(line) == 2 ):
-                        self.ndiv_e:int = int(line[1])
+                        self.ndiv_e = int(line[1])
                     else:
-                        self.ndiv_e:int = int(line[0].replace("ndiv_e=",""))
+                        self.ndiv_e = int(line[0].replace("ndiv_e=",""))
                 elif ( sw_ccd and line[0][0:10] == "ndiv_temp=" ):
                     if ( len(line) == 2 ):
-                        self.ndiv_temp:int = int(line[1])
+                        self.ndiv_temp = int(line[1])
                     else:
-                        self.ndiv_temp:int = int(line[0].replace("ndiv_temp=",""))
+                        self.ndiv_temp = int(line[0].replace("ndiv_temp=",""))
                 elif ( sw_ccd and line[0][0:8] == "ndiv_eg=" ):
                     if ( len(line) == 2 ):
-                        self.ndiv_eg:int = int(line[1])
+                        self.ndiv_eg = int(line[1])
                     else:
-                        self.ndiv_eg:int = int(line[0].replace("ndiv_eg=",""))
+                        self.ndiv_eg = int(line[0].replace("ndiv_eg=",""))
                 else:
                     pass
             
                 """ phonon """
                 if ( sw_ph and line[0][0:5] == "ndim=" ):
                     if ( len(line) == 4 ):
-                        self.ndim:int = [int(l) for l in line[1:4]]
+                        self.ndim = [int(l) for l in line[1:4]]
                     else:
-                        self.ndim:int = [int(line[0].replace("ndim=","")),int(line[1]),int(line[2])]
+                        self.ndim = [int(line[0].replace("ndim=","")),int(line[1]),int(line[2])]
                     self.ndim = np.array(self.ndim)
                 elif ( sw_ph and line[0][0:7] == "emin_ph=" ):
                     if ( len(line) == 2 ):
-                        self.emin_ph:float = float(line[1])
+                        self.emin_ph = float(line[1])
                     else:
-                        self.emin_ph:float = float(line[0].replace("emin_ph=",""))
+                        self.emin_ph = float(line[0].replace("emin_ph=",""))
                 elif ( sw_ph and line[0][0:7] == "emax_ph=" ):
                     if ( len(line) == 2 ):
-                        self.emax_ph:float = float(line[1])
+                        self.emax_ph = float(line[1])
                     else:
-                        self.emax_ph:float = float(line[0].replace("emax_ph=",""))
+                        self.emax_ph = float(line[0].replace("emax_ph=",""))
                 elif ( sw_ph and line[0][0:6] == "sigma=" ):
                     if ( len(line) == 2 ):
-                        self.sigma:float = float(line[1])
+                        self.sigma = float(line[1])
                     else:
-                        self.sigma:float = float(line[0].replace("sigma=",""))
+                        self.sigma = float(line[0].replace("sigma=",""))
                 elif ( sw_ph and line[0][0:5] == "tinf=" ):
                     if ( len(line) == 2 ):
-                        self.tinf:float = float(line[1])
+                        self.tinf = float(line[1])
                     else:
-                        self.tinf:float = float(line[0].replace("tinf=",""))
+                        self.tinf = float(line[0].replace("tinf=",""))
                 elif ( sw_ph and line[0][0:6] == "ndiv_t=" ):
                     if ( len(line) == 2 ):
-                        self.ndiv_t:int = int(line[1])
+                        self.ndiv_t = int(line[1])
                     else:
-                        self.ndiv_t:int = int(line[0].replace("ndiv_t=",""))
+                        self.ndiv_t = int(line[0].replace("ndiv_t=",""))
                 elif ( sw_ph and line[0][0:11] == "gamma_spec=" ):
                     if ( len(line) == 2 ):
-                        self.gamma_spec:float = float(line[1])
+                        self.gamma_spec = float(line[1])
                     else:
-                        self.gamma_spec:float = float(line[0].replace("gamma_spec=",""))
+                        self.gamma_spec = float(line[0].replace("gamma_spec=",""))
                 elif ( sw_ph and line[0][0:6] == "sw_HR=" ):
                     if ( len(line) == 2 ):
-                        self.sw_HR:str = line[1]
+                        self.sw_HR = line[1]
                     else:
-                        self.sw_HR:str = line[0].replace("sw_HR=","")
+                        self.sw_HR = line[0].replace("sw_HR=","")
                 elif ( sw_ph and line[0][0:9] == "sw_phrun=" ):
                     if ( len(line) == 2 ):
-                        self.sw_phrun:bool = bool(int(line[1]))
+                        self.sw_phrun = bool(int(line[1]))
                     else:
-                        self.sw_phrun:bool = bool(int(line[0].replace("sw_phrun=","")))
+                        self.sw_phrun = bool(int(line[0].replace("sw_phrun=","")))
                 elif ( sw_ph and line[0][0:10] == "sw_plt_ph=" ):
                     if ( len(line) == 2 ):
-                        self.sw_plt_ph:str = line[1]
+                        self.sw_plt_ph = line[1]
                     else:
-                        self.sw_plt_ph:str = line[0].replace("sw_plt_ph=","")
+                        self.sw_plt_ph = line[0].replace("sw_plt_ph=","")
                 else:
                     pass
         else:
             pass
 
-        args:str = sys.argv
+        args = sys.argv
         if ( (len(args) == 1 and self.mat == "") or "-h" in args ):
             helpmessage: str = """ *** USAGE: python lumin.py {mat} [-h] [-nc {nc}] [-exe {exe}] [-p] [-emod] [-ccd] [-ph]
                                 -h : print helpmessage
@@ -438,14 +506,22 @@ class subs:
                                 -I0 {I0} : Intensity of the spectrum {1.0}
                                 -gamma {gamma} : broadness params. of Lorentzian {1.0e-5}
                                 -eg : generate intermediate structures b/w excited & ground or not {False}
+                                -anharm : consider anharmonicity in adiabatic energy curve or not {False}
+                                -2dim : plot 2dim fit or not {False}
+                                -fix {sw_fix} : switch for 2dim fit in 1D-CCD, fix vertex position (vertex) or curvature (curve) {vertex}
+                                -curv {curvature} : curvature to be fixed {None}
+                                -dim {dim_fit} : dimension to fit energy curve {3}
                                 -stateg {stateg} : name of the ground state {4A2g}
                                 -statee {statee} : name of the excited state {4T2g}
+                                -include {include} : name of file to be shown in spectrum {None}
+                                -fac {fac_include} : factor of include file x axis {1.0}
                                 -unit {sw_unit} : select unit of quantities (eV, cm^-1, nm) {eV}
                                 -emin_ccd {emin_ccd} : energy min. for plotting {1.0}
                                 -emax_ccd {emax_ccd} : energy max. for plotting {3.0}
                                 -tempmin {tempmin} : temperature min. {1.0}
                                 -tempmax {tempmax} : temperature max. {1.0e3}
                                 -temp {temp} : temperature {298.0}
+                                -spec_temp : show spectrum at finite temp or not {False}
                                 -nmax {nmax} : cut-off number of summation, larger value is plausible {30}
                                 -nde {ndiv_e} : number of devision for energy {1000000}
                                 -ndtmp {ndiv_temp} : number of devision for temperature {1000}
@@ -467,107 +543,123 @@ class subs:
         if ( ( self.mat == "" ) and ( not args[1][0] == "-" ) ):
             self.mat: str = args[1]
         if ( "-emod" in args ):
-            self.sw_run_emod:bool = True
+            self.sw_run_emod = True
         if ( "-ccd" in args ):
-            self.sw_run_ccd:bool = True
+            self.sw_run_ccd = True
         if ( "-ph" in args ):
-            self.sw_run_ph:bool = True
+            self.sw_run_ph = True
         if ( "-nc" in args ):
-            self.nc:int = int(args[args.index("-nc")+1])
+            self.nc = int(args[args.index("-nc")+1])
         if ( "-exe" in args ):
-            self.exe:str = args[args.index("-exe")+1]
+            self.exe = args[args.index("-exe")+1]
         if ( "-code" in args ):
-            self.code:str = args[args.index("-code")+1]
+            self.code = args[args.index("-code")+1]
         if ( "-nsp" in args ):
-            self.nspin:int = int(args[args.index("-nsp")+1])
+            self.nspin = int(args[args.index("-nsp")+1])
         if ( "-p" in args ):
-            self.sw_plt_emod:bool = True
-            self.sw_plt_ccd:bool = True
-            self.sw_plt_ph:bool = True
+            self.sw_plt_emod = True
+            self.sw_plt_ccd = True
+            self.sw_plt_ph = True
         if ( "-pemod" in args ):
-            self.sw_plt_emod:bool = True
+            self.sw_plt_emod = True
         if ( "-pccd" in args ):
-            self.sw_plt_ccd:bool = True
+            self.sw_plt_ccd = True
         if ( "-pph" in args ):
-            self.sw_plt_ph:bool = True
+            self.sw_plt_ph = True
         """ emod """
         if ( "-brav" in args ):
-            self.brav:str = args[args.index("-brav")+1]
+            self.brav = args[args.index("-brav")+1]
         if ( "-dr" in args ):
-            self.dratio:float = float(args[args.index("-dr")+1])
+            self.dratio = float(args[args.index("-dr")+1])
         if ( "-ndem" in args ):
-            self.ndiv_emod:int = int(args[args.index("-ndem")+1])
+            self.ndiv_emod = int(args[args.index("-ndem")+1])
         if ( "-Bmod" in args ):
-            self.sw_Bmod:bool = True
+            self.sw_Bmod = True
         if ( "-relax" in args ):
-            self.sw_relax:bool = True
+            self.sw_relax = True
         if ( "-egap" in args ):
-            self.sw_egap:bool = True
+            self.sw_egap = True
         if ( "-GW" in args ):
-            self.sw_GW:bool = True
+            self.sw_GW = True
         if ( "-auto" in args ):
-            self.sw_auto:bool = True
+            self.sw_auto = True
         """ ccd """
         if ( "-Eabs" in args ):
-            self.Eabs0:float = float(args[args.index("-Eabs")+1])
+            self.Eabs0 = float(args[args.index("-Eabs")+1])
         if ( "-Eem" in args ):
-            self.Eem0:float = float(args[args.index("-Eem")+1])
+            self.Eem0 = float(args[args.index("-Eem")+1])
         if ( "-FC" in args ):
-            self.EFCg:float = float(args[args.index("-FC")+1])
+            self.EFCg = float(args[args.index("-FC")+1])
         if ( "-dQ" in args ):
-            self.dQ:float = float(args[args.index("-dQ")+1])
+            self.dQ = float(args[args.index("-dQ")+1])
         if ( "-I0" in args ):
-            self.I0:float = float(args[args.index("-I0")+1])
+            self.I0 = float(args[args.index("-I0")+1])
         if ( "-gamma" in args ):
-            self.gamma:float = float(args[args.index("-gamma")+1])
+            self.gamma = float(args[args.index("-gamma")+1])
         if ( "-eg" in args ):
-            self.sw_eg:bool = True
+            self.sw_eg = True
+        if ( "-anharm" in args ):
+            self.sw_anharm = True
+        if ( "-2dim" in args ):
+            self.sw_2dim = True
+        if ( "-spec_temp" in args ):
+            self.sw_spec_temp = True
         if ( "-stateg" in args ):
-            self.stateg:str = args[args.index("-stateg")+1]
+            self.stateg = args[args.index("-stateg")+1]
         if ( "-statee" in args ):
-            self.stateg:str = args[args.index("-statee")+1]
+            self.stateg = args[args.index("-statee")+1]
         if ( "-unit" in args ):
-            self.sw_unit:str = args[args.index("-unit")+1]
+            self.sw_unit = args[args.index("-unit")+1]
+        if ( "-fix" in args ):
+            self.sw_fix = args[args.index("-fix")+1]
+        if ( "-curv" in args ):
+            self.curvature = float(args[args.index("-curv")+1])
+        if ( "-include" in args ):
+            self.include = args[args.index("-include")+1]
+        if ( "-fac" in args ):
+            self.fac_include = float(args[args.index("-fac")+1])
+        if ( "-dim" in args ):
+            self.dim_fit = int(args[args.index("-dim")+1])
         if ( "-emin_ccd" in args ):
-            self.emin_ccd:float = float(args[args.index("-emin_ccd")+1])
+            self.emin_ccd = float(args[args.index("-emin_ccd")+1])
         if ( "-emax_ccd" in args ):
-            self.emax_ccd:float = float(args[args.index("-emax_ccd")+1])
+            self.emax_ccd = float(args[args.index("-emax_ccd")+1])
         if ( "-tempmin" in args ):
-            self.tempmin:float = float(args[args.index("-tempmin")+1])
+            self.tempmin = float(args[args.index("-tempmin")+1])
         if ( "-tempmax" in args ):
-            self.tempmax:float = float(args[args.index("-tempmax")+1])
+            self.tempmax = float(args[args.index("-tempmax")+1])
         if ( "-temp" in args ):
-            self.temp:float = float(args[args.index("-temp")+1])
+            self.temp = float(args[args.index("-temp")+1])
         if ( "-nmax" in args ):
-            self.nmax:int = int(args[args.index("-nmax")+1])
+            self.nmax = int(args[args.index("-nmax")+1])
         if ( "-nde" in args ):
-            self.ndiv_e:int = int(args[args.index("-nde")+1])
+            self.ndiv_e = int(args[args.index("-nde")+1])
         if ( "-ndtmp" in args ):
-            self.ndiv_temp:int = int(args[args.index("-ndtmp")+1])
+            self.ndiv_temp = int(args[args.index("-ndtmp")+1])
         if ( "-ndeg" in args ):
-            self.ndiv_eg:int = int(args[args.index("-ndeg")+1])
+            self.ndiv_eg = int(args[args.index("-ndeg")+1])
         """ ph """
         if ( "-ndim" in args ):
-            self.ndim:int = [int(args[args.index("-ndim")+1+i]) for i in range(3)]
+            self.ndim = [int(args[args.index("-ndim")+1+i]) for i in range(3)]
             self.ndim = np.array(self.ndim)
         if ( "-HR" in args ):
-            self.sw_HR:str = args[args.index("-HR")+1]
+            self.sw_HR = args[args.index("-HR")+1]
         if ( "-phrun" in args ):
-            self.sw_phrun:bool = True
+            self.sw_phrun = True
         if ( "-nde_ph" in args ):
-            self.ndiv_ph:int = int(args[args.index("-nde_ph")+1])
+            self.ndiv_ph = int(args[args.index("-nde_ph")+1])
         if ( "-emin_ph" in args ):
-            self.emin_ph:float = float(args[args.index("-emin_ph")+1])
+            self.emin_ph = float(args[args.index("-emin_ph")+1])
         if ( "-emax_ph" in args ):
-            self.emax_ph:float = float(args[args.index("-emax_ph")+1])
+            self.emax_ph = float(args[args.index("-emax_ph")+1])
         if ( "-sigma" in args ):
-            self.sigma:float = float(args[args.index("-sigma")+1])
+            self.sigma = float(args[args.index("-sigma")+1])
         if ( "-tinf" in args ):
-            self.tinf:float = float(args[args.index("-tinf")+1])
+            self.tinf = float(args[args.index("-tinf")+1])
         if ( "-gsp" in args ):
-            self.gamma_spec:float = float(args[args.index("-gsp")+1])
+            self.gamma_spec = float(args[args.index("-gsp")+1])
         if ( "-ndt" in args ):
-            self.ndiv_t:int = int(args[args.index("-ndt")+1])
+            self.ndiv_t = int(args[args.index("-ndt")+1])
 
     ### ----------------------------------------------------------------------------- ###
     def ck_prms(self):
@@ -606,7 +698,14 @@ class subs:
             print("* gamma: ", self.gamma)
             print("* sw_plt_ccd: ", self.sw_plt_ccd)
             print("* sw_eg: ", self.sw_eg)
+            print("* sw_anharm: ", self.sw_anharm)
+            print("* sw_2dim: ", self.sw_2dim)
+            print("* sw_fix: ", self.sw_fix)
             print("* sw_unit: ", self.sw_unit)
+            print("* curvature: ", self.curvature)
+            print("* include: ", self.include)
+            print("* dim_fit: ", self.dim_fit)
+            print("* fac_include: ", self.fac_include)
             print("* stateg: ", self.stateg)
             print("* statee: ", self.statee)
             print("* emin_ccd (eV): ", self.emin_ccd)
@@ -614,6 +713,7 @@ class subs:
             print("* tempmin (K): ", self.tempmin)
             print("* tempmax (K): ", self.tempmax)
             print("* temp (K): ", self.temp)
+            print("* sw_spec_temp: ", self.sw_spec_temp)
             print("* nmax: ", self.nmax)
             print("* ndiv_e: ", self.ndiv_e)
             print("* ndiv_temp: ", self.ndiv_temp)
@@ -634,35 +734,43 @@ class subs:
         print("* --- Finish check parameters --- *")
 
     ### ----------------------------------------------------------------------------- ###
-    def set_prms(self, material:str, bravias:str):
+    def set_prms(self, material, bravias):
         """ set parameters """
     
-        self.mat:str = material
-        self.brav:str = bravias
+        self.mat = material
+        self.brav = bravias
+
+    ### ----------------------------------------------------------------------------- ###
+    def set_prms_ccd(self, Eabs, Eem, EFC):
+        """ set ccd parameters """
+
+        self.Eabs0 = Eabs
+        self.Eem0 = Eem
+        self.EFCg = EFC
         
     ### ----------------------------------------------------------------------------- ###
-    def get_POSCAR(self, fn:str):
+    def get_POSCAR(self, fn):
         """ get information from POSCAR """
         
         with open(fn, "r") as f:
-            data:str = f.readlines()
-        alat:float = float(data[1].split()[0]) / self.Bohr
-        plat:float = [[float(d) for d in data[2].split()],
+            data = f.readlines()
+        alat = float(data[1].split()[0]) / self.Bohr
+        plat = [[float(d) for d in data[2].split()],
                       [float(d) for d in data[3].split()],
                       [float(d) for d in data[4].split()]]
-        elements:str = [d for d in data[5].split()]
-        nelems:int = [int(d) for d in data[6].split()]
-        natm:int = sum(nelems)
-        pos:float = []
+        elements = [d for d in data[5].split()]
+        nelems = [int(d) for d in data[6].split()]
+        natm = sum(nelems)
+        pos = []
         for dat in data[8:]:
             pos.append([float(d) for d in dat.split()])
         plat = np.array(plat)
         pos = np.array(pos)
-        volume:float = (alat**3.) * abs(np.dot(plat[0],np.cross(plat[1],plat[2])))
+        volume = (alat**3.) * abs(np.dot(plat[0],np.cross(plat[1],plat[2])))
         return (alat, plat, elements, nelems, natm, pos, volume)
 
     ### ----------------------------------------------------------------------------- ###
-    def get_FORCE(self, fn:str):
+    def get_FORCE(self, fn):
         """ get force information of ground & excited states """
         
         p = pathlib.Path(fn)
@@ -675,25 +783,25 @@ class subs:
         return Force
 
     ### ----------------------------------------------------------------------------- ###
-    def Lorentzian(self, x:float):
+    def Lorentzian(self, x):
         """ define Lorentzian """
         
         return (1./np.pi)*(0.5*self.gamma / (x**2.+(0.5*self.gamma)**2.))
 
     ### ----------------------------------------------------------------------------- ###
-    def Gaussian(self, x:float):
+    def Gaussian(self, x):
         """ define Gaussian """
         
         return (1./(self.sigma*np.sqrt(2.*np.pi))) * np.exp(-x**2./(2.*self.sigma**2.))
 
     ### ----------------------------------------------------------------------------- ###
-    def E2lambda(self, energy:float):
+    def E2lambda(self, energy):
         """ transfrom energy to wavelength """
         
-        return const.fceV2nm/energy  # nm
+        return self.fceV2nm/energy  # nm
 
     ### ----------------------------------------------------------------------------- ###
-    def lambda2E(self, lam:float):
+    def lambda2E(self, lam):
         """ transform wavelength to energy """
         
-        return const.fceV2nm/lam     # eV
+        return self.fceV2nm/lam     # eV

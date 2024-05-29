@@ -30,11 +30,11 @@ class ph:
         sub.run(["conda activate phonopy"], shell=True)
         sub.run(["phonopy --qe -d --dim='{nd1} {nd2} {nd3}' -c {mat}.scf.in".format(nd1=prms.ndim[0], nd2=prms.ndim[1], nd3 = prms.ndim[2], mat=prms.mat)], shell=True)
         sub.run(["ls -lrt supercell-* > lsout"], shell=True)
-        force_command:str = "phonopy -f "
-        data:str = np.loadtxt("lsout",dtype="str",unpack=True,ndmin=0)
-        files:str = data[len(data)-1]
+        force_command = "phonopy -f "
+        data = np.loadtxt("lsout",dtype="str",unpack=True,ndmin=0)
+        files = data[len(data)-1]
         for fi in files:
-            ncsc:str = fi.replace("supercell-","").replace(".in","")
+            ncsc = fi.replace("supercell-","").replace(".in","")
             p = pathlib.Path(ncsc)
             if ( not p.is_dir() ):
                 sub.run(["mkdir {ncsc}".format(ncsc=ncsc)], shell=True)
@@ -79,21 +79,21 @@ class ph:
         self.dynmat = np.array(self.dynmat)
         self.eigvals, self.eigvecs = np.linalg.eigh(self.dynmat)
         self.eigvecs = np.reshape(self.eigvecs, (3,len(self.eigvecs[0])//3,len(self.eigvecs)))
-        self.freq:float = np.sqrt(np.abs(self.eigvals.real)) * np.sign(self.eigvals.real)
+        self.freq = np.sqrt(np.abs(self.eigvals.real)) * np.sign(self.eigvals.real)
         self.freq = self.freq * prms.conversion_factor_to_THz * prms.THz2eV
 
-        self.nmode:int = len(self.freq)
-        self.qk:float = np.zeros(self.nmode)
-        self.qk_force:float = np.zeros(self.nmode)
+        self.nmode = len(self.freq)
+        self.qk = np.zeros(self.nmode)
+        self.qk_force = np.zeros(self.nmode)
         (alat, plat, elements, nelems, natm, Rpos_g, volume) = prms.get_POSCAR("POSCAR_"+prms.stateg)
         (alat, plat, elements, nelems, natm, Rpos_e, volume) = prms.get_POSCAR("POSCAR_"+prms.statee)
-        mass:float = []
+        mass = []
         for i, nel in enumerate(nelems):
             for j in range(nel):
                 mass.append(prms.ELEMS_MASS[elements[i]]*prms.uatm/prms.me)
         if ( prms.sw_HR in {"force","both"} ):
-            Force_g:float = prms.get_FORCE("FORCE_"+prms.stateg)
-            Force_e:float = prms.get_FORCE("FORCE_"+prms.statee)
+            Force_g = prms.get_FORCE("FORCE_"+prms.stateg)
+            Force_e = prms.get_FORCE("FORCE_"+prms.statee)
         
         for i in range(natm):
             for j in range(3):
@@ -101,16 +101,16 @@ class ph:
                     self.qk[:] += np.sqrt(mass[i]) * (Rpos_e[i,j]-Rpos_g[i,j]) * self.eigvecs[j,i,:].real / prms.Bohr
                 if ( prms.sw_HR in {"force","both"} ):
                     self.qk_force[:] += (1./((self.freq[:]/prms.Ry)**2.)*np.sqrt(mass[i])) * (Force_e[i,j]-Force_g[i,j]) * self.eigvecs[j,i,:].real
-        self.Sk:float = np.zeros(self.nmode)
-        self.Sk_force:float = np.zeros(self.nmode)
+        self.Sk = np.zeros(self.nmode)
+        self.Sk_force = np.zeros(self.nmode)
         for i in range(self.nmode):
-            self.Sk[i]:float = self.freq[i] * self.qk[i]**2. / ( 2.*prms.Ry )
-            self.Sk_force[i]:float = self.freq[i] * self.qk_force[i]**2. / ( 2.*prms.Ry )
-        energy:float = np.linspace(prms.emin_ph, prms.emax_ph, prms.ndiv_ph)
-        self.Sspec:float = np.zeros(prms.ndiv_ph)
-        self.Sspec_force:float = np.zeros(prms.ndiv_ph)
-        self.Stot:float = 0.0
-        self.Stot_force:float = 0.0
+            self.Sk[i] = self.freq[i] * self.qk[i]**2. / ( 2.*prms.Ry )
+            self.Sk_force[i] = self.freq[i] * self.qk_force[i]**2. / ( 2.*prms.Ry )
+        energy = np.linspace(prms.emin_ph, prms.emax_ph, prms.ndiv_ph)
+        self.Sspec = np.zeros(prms.ndiv_ph)
+        self.Sspec_force = np.zeros(prms.ndiv_ph)
+        self.Stot = 0.0
+        self.Stot_force = 0.0
         for i in range(self.nmode):
             if ( prms.sw_HR in {"pos","both"} ):
                 self.Sspec[:] += self.Sk[i] * prms.Gaussian(energy[:]-self.freq[i])
@@ -120,7 +120,7 @@ class ph:
                 self.Stot_force += self.Sk_force[i]
         print("* Stot from position: ", self.Stot)
         print("* Stot from force: ", self.Stot_force)
-        self.DWfac:float = np.exp(-self.Stot)
+        self.DWfac = np.exp(-self.Stot)
         print("* Debye-Waller factor: ", self.DWfac)
         if ( prms.sw_plt_ph ):
             print("* --- Plot S(hbar*omega) from position --- *")
@@ -132,6 +132,7 @@ class ph:
             ax2 = ax1.twinx()
             ax2.set_ylabel(r"$\mathrm{S_k}$")
             ax2.bar(1000.*self.freq, self.Sk, color="mediumblue", width=0.15)
+            plt.moinorticks_on()
             plt.savefig("Sk_pos.pdf")
             plt.show()
             if ( sw_HR in {"force","both"} ):
@@ -144,6 +145,7 @@ class ph:
                 ax2 = ax1.twinx()
                 ax2.set_ylabel(r"$\mathrm{S_k}$")
                 ax2.bar(1000.*self.freq, self.Sk_force, color="mediumblue", width=0.15)
+                plt.minorticks_on()
                 plt.savefig("Sk_force.pdf")
                 plt.show()
         print("* --- Finish Huang Rhys parameter --- *")
@@ -154,18 +156,19 @@ class ph:
         """ plot spectral function """
 
         print("* --- PLOT SPECTRAL FUNCTION --- *")
-        tarr:float = np.linspace(-prms.tinf, prms.tinf, 2*prms.ndiv_t)
-        energy:float = np.linspace(prms.emin_ph, prms.emax_ph, prms.ndiv_ph)
-        integrandS:float = [self.Sspec * np.exp(-1.j*(energy/prms.hbareV)*t) for t in tarr]
-        St:float = np.array([integrate.simps(integrandS[i,:], energy[:]) for i,t in enumerate(tarr)])
-        genfunc:float = np.array([np.exp(Stt-self.Stot) for Stt in St])
-        integrandt:float = np.array([genfunc*np.exp(1.j*(ene/prms.hbareV)*tarr-prms.gamma_spec*np.abs(tarr)) for ene in enumerate(energy)])
-        self.Aspec:float = (1./(2.*np.pi)) * np.array([integrate.simps(integrandt[i,:],tarr) for i in range(energy)])
+        tarr = np.linspace(-prms.tinf, prms.tinf, 2*prms.ndiv_t)
+        energy = np.linspace(prms.emin_ph, prms.emax_ph, prms.ndiv_ph)
+        integrandS = [self.Sspec * np.exp(-1.j*(energy/prms.hbareV)*t) for t in tarr]
+        St = np.array([integrate.simps(integrandS[i,:], energy[:]) for i,t in enumerate(tarr)])
+        genfunc = np.array([np.exp(Stt-self.Stot) for Stt in St])
+        integrandt = np.array([genfunc*np.exp(1.j*(ene/prms.hbareV)*tarr-prms.gamma_spec*np.abs(tarr)) for ene in enumerate(energy)])
+        self.Aspec = (1./(2.*np.pi)) * np.array([integrate.simps(integrandt[i,:],tarr) for i in range(energy)])
         if ( prms.sw_plt_ph ):
             fig = plt.figure()
             plt.xlabel("Energy (eV)")
             plt.ylabel("Intensity (arbitrary unit)")
             plt.plot(energy, self.Aspec, color="mediumblue")
+            plt.minortics_on()
             plt.savefig("Spec_MultiD.pdf")
             plt.show()
         else:

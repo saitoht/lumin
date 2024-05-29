@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" Lumin.py: Estimation of luminescent properties of materials
+""" Lumin: Estimation of luminescent properties of materials
            Consolidate cls_emod.py, cls_ccd.py, and cls_ph.py """
 import sys, time
 import cls_subs as subs
@@ -11,7 +11,7 @@ if __name__=="__main__":
     prms = subs.subs()
     now = time.strftime("%Y/%m/%d %H:%M:%S")
     tmbf = time.time()
-    print("* --- lumin.py --- *")
+    print("* --- lumin --- *")
     print("*** JOB Start at {now}.".format(now=now))
     print("*")
     prms.ck_prms()
