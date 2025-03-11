@@ -708,7 +708,36 @@ class emod:
             emod.calc_Emod(self, ep, dfmat, sym)
             E80 = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
             E8 = E80[2]
-            #### you need more distorsions
+            """ 0.5*C22 + C23 + 0.5*C33 """
+            sym = "mono-plyz"
+            dfmat = np.array([np.diag([1.,1.+d,1.+d]).tolist() for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E90 = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
+            E9 = E90[2]
+            """ 0.5*C11 + 0.5*C55 + C15 """
+            sym = "mono-zx-axx"
+            dfmat = np.array([np.array([[1.+d,0.,0.5*d],[0.,1.,0.],[0.5*d,0.,1.]]).tolist() for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E100 = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
+            E10 = E100[2]
+            """ 0.5*C22 + 0.5*C55 + C25 """
+            sym = "mono-zx-axy"
+            dfmat = np.array([np.array([[1.,0.,0.5*d],[0.,1.+d,0.],[0.5*d,0.,1.]]).tolist() for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E110 = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
+            E11 = E110[2]
+            """ 0.5*C33 + 0.5*C55 + C35 """
+            sym = "mono-zx-axz"
+            dfmat = np.array([np.array([[1.,0.,0.5*d],[0.,1.,0.],[0.5*d,0.,1.+d]]).tolist() for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E120 = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
+            E12 = E120[2]
+            """ 0.5*C44 + 0.5*C66 + C46 """
+            sym = "mono-zx-axz"
+            dfmat = np.array([np.array([[1.,0.5*d,0.],[0.5*d,1.,0.5*d],[0.,0.5*d,1.]]).tolist() for d in ep])
+            emod.calc_Emod(self, ep, dfmat, sym)
+            E130 = emod.Emod_fit(self, para_3rd, sym, sw_3rd=True)
+            E13 = E130[2]
 
             self.C11 = prms.AU2GPa * 2. * E1
             self.C22 = prms.AU2GPa * 2. * E2
@@ -718,11 +747,11 @@ class emod:
             self.C66 = prms.AU2GPa * 2. * E6
             self.C12 = prms.AU2GPa * (E7 - E1 - E2)
             self.C13 = prms.AU2GPa * (E8 - E1 - E3)
-            #self.C15 =
-            #self.C23 =
-            #self.C25 =
-            #self.C35 =
-            #self.C46 = 
+            self.C15 = prms.AU2GPa * (E10 - E1 - E5)
+            self.C23 = prms.AU2GPa * (E9 - E2 - E3)
+            self.C25 = prms.AU2GPa * (E11 - E2 - E5)
+            self.C35 = prms.AU2GPa * (E12 - E3 - E5)
+            self.C46 = prms.AU2GPa * (E13 - E4 - E6)
             Econst = np.array([self.C11,self.C12,self.C13,self.C22,self.C33,self.C44,self.C55,self.C66])
             BV = (self.C11+self.C22+self.C33+2.*(self.C12+self.C13+self.C23))/9.
             GV = (self.C11+self.C22+self.C33+3.*(self.C44+self.C55+self.C66)-(self.C12+self.C13+self.C23))/15.

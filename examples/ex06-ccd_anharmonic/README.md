@@ -7,6 +7,9 @@ We simulate the optical spectra of this system using ${\Delta}$SCF method.
 - POSCAR_4T2g
 - header_4A2g.in
 - header_4T2g.in
+- pot/Al.pbesol-n-kjpaw_psl.1.0.0.UPF
+- pot/Cr.pbesol-spn-kjpaw_psl.1.0.0.UPF
+- pot/O.pbesol-n-kjpaw_psl.0.1.UPF
 
 ## Execute the program
 Here, in order to calculate the intermediate states automatically, you will activate "sw_eg" in LUMIN as
@@ -30,6 +33,14 @@ lumin -ccd -p
 
 ## Results
 Output text about spectra
-- lumin.results_spec
+- lumin.out
+- DATA_4A2g
+- DATA_4T2g
 
 Figures
+- figs/1DCCD_4T2g.pdf
+- figs/Ecurve_fit_DATA_4T2g.pdf
+- figs/Epeak_Temp.pdf
+- figs/FWHM_Temp.pdf
+- figs/Spectrum.pdf
+- figs/Stokes_Temp.pdf

@@ -1,5 +1,5 @@
-* --- lumin.py --- *
-*** JOB Start at 2024/03/24 00:21:05.
+* --- lumin --- *
+*** JOB Start at 2025/03/11 14:53:24.
 *
 * --- check parameters --- *
 *** system parameters ***
@@ -9,6 +9,8 @@
 * sw_run_ph:  False
 * nc:  20
 * exe:  $HOME/qe7.2/bin
+* code:  qe
+* nspin:  1
 *
 *** configuration coordinate diagram parameters ***
 * Eabs0 (eV):  2.599
@@ -17,15 +19,24 @@
 * dQ (eV):  1.0
 * I0:  1.0
 * gamma:  1e-05
-* sw_plt_ccd:  True
+* sw_plt_ccd:  False
 * sw_eg:  True
+* sw_anharm:  False
+* sw_2dim:  False
+* sw_fix:  vertex
 * sw_unit:  eV
+* curvature:  None
+* include:  None
+* dim_fit:  3
+* fac_include:  1.0
 * stateg:  4A2g
 * statee:  4T2g
 * emin_ccd (eV):  1.5
 * emax_ccd (eV):  3.5
 * tempmin (K):  1.0
 * tempmax (K):  1000.0
+* temp (K):  298.0
+* sw_spec_temp:  False
 * nmax:  30
 * ndiv_e:  1000000
 * ndiv_temp:  1000
@@ -34,79 +45,81 @@
 * --- Finish check parameters --- *
 * --- Start calculation of configuration coordinate model--- *
 * --- gernerate POSCAR in between ground & excited states --- *
-* Q=-1.0 POSCAR_eg1 created!
-* Q=-0.7272727272727273 POSCAR_eg2 created!
-* Q=-0.4545454545454546 POSCAR_eg3 created!
-* Q=-0.18181818181818188 POSCAR_eg4 created!
-* Q=0.09090909090909083 POSCAR_eg5 created!
-* Q=0.36363636363636354 POSCAR_eg6 created!
-* Q=0.6363636363636362 POSCAR_eg7 created!
-* Q=0.909090909090909 POSCAR_eg8 created!
-* Q=1.1818181818181817 POSCAR_eg9 created!
-* Q=1.4545454545454541 POSCAR_eg10 created!
-* Q=1.727272727272727 POSCAR_eg11 created!
-* Q=2.0 POSCAR_eg12 created!
+* Q=-1.0*deltaQ POSCAR_eg1 created!
+* Q=-0.7272727272727273*deltaQ POSCAR_eg2 created!
+* Q=-0.4545454545454546*deltaQ POSCAR_eg3 created!
+* Q=-0.18181818181818188*deltaQ POSCAR_eg4 created!
+* Q=0.09090909090909083*deltaQ POSCAR_eg5 created!
+* Q=0.36363636363636354*deltaQ POSCAR_eg6 created!
+* Q=0.6363636363636362*deltaQ POSCAR_eg7 created!
+* Q=0.909090909090909*deltaQ POSCAR_eg8 created!
+* Q=1.1818181818181817*deltaQ POSCAR_eg9 created!
+* Q=1.4545454545454541*deltaQ POSCAR_eg10 created!
+* Q=1.727272727272727*deltaQ POSCAR_eg11 created!
+* Q=2.0*deltaQ POSCAR_eg12 created!
 * Finish!
 *
 * --- gernerate POSCAR in between ground & excited states --- *
-* Q=-1.0 POSCAR_eg1 created!
-* Q=-0.7272727272727273 POSCAR_eg2 created!
-* Q=-0.4545454545454546 POSCAR_eg3 created!
-* Q=-0.18181818181818188 POSCAR_eg4 created!
-* Q=0.09090909090909083 POSCAR_eg5 created!
-* Q=0.36363636363636354 POSCAR_eg6 created!
-* Q=0.6363636363636362 POSCAR_eg7 created!
-* Q=0.909090909090909 POSCAR_eg8 created!
-* Q=1.1818181818181817 POSCAR_eg9 created!
-* Q=1.4545454545454541 POSCAR_eg10 created!
-* Q=1.727272727272727 POSCAR_eg11 created!
-* Q=2.0 POSCAR_eg12 created!
+* Q=-1.0*deltaQ POSCAR_eg1 created!
+* Q=-0.7272727272727273*deltaQ POSCAR_eg2 created!
+* Q=-0.4545454545454546*deltaQ POSCAR_eg3 created!
+* Q=-0.18181818181818188*deltaQ POSCAR_eg4 created!
+* Q=0.09090909090909083*deltaQ POSCAR_eg5 created!
+* Q=0.36363636363636354*deltaQ POSCAR_eg6 created!
+* Q=0.6363636363636362*deltaQ POSCAR_eg7 created!
+* Q=0.909090909090909*deltaQ POSCAR_eg8 created!
+* Q=1.1818181818181817*deltaQ POSCAR_eg9 created!
+* Q=1.4545454545454541*deltaQ POSCAR_eg10 created!
+* Q=1.727272727272727*deltaQ POSCAR_eg11 created!
+* Q=2.0*deltaQ POSCAR_eg12 created!
 * Finish!
 *
 * --- Fitting energy curve --- *
 * Fitted by cubic equation: 
-[-0.02346367  0.21236649 -0.00142804 -0.00174985]
-* hbar*Omega (eV) [cubic]: sqrt(-0.0005884909530717943Q+0.001775450541215103)
-* Qmin (amu^1/2 ang): 0.0033640900034109787
-* hbar*Omega (eV) @ Q=Qmin: 0.04211259674589987
+* ground state *
+[-2.28806557e-02  2.10696139e-01  4.56628769e-04 -9.47088378e-09]
+* hbar*Omegag (eV) [cubic]: sqrt(-0.0005738683941957511Q+0.0017614858669429015)
+* Qming (amu^1/2 ang): -0.0010834280066885384
+* hbar*Omegag (eV) @ Q=Qming: 0.04197746552655754
+*
+* excited state *
+[-0.01612839  0.17654658 -0.32553028  0.16474104]
+* hbar*Omegae (eV) [cubic]: sqrt(-0.00040451515145579825Q+0.0014759848414175485)
+* Qmine (amu^1/2 ang): 1.0825199863414559
+* hbar*Omegae (eV) @ Q=Qmine: 0.03221939020510329
 *
 * Fitted by quadratic equation: 
-[ 0.17717099 -0.02091646  0.01386028]
-* hbar*Omega (eV) [quadratic]: 0.0384864270188752
-* Qmin (amu^1/2 ang): 0.059029032659384355
-* --- Fitting energy curve --- *
-* Fitted by cubic equation: 
-[-0.01559111  0.17560147 -0.32788095  0.16813998]
-* hbar*Omega (eV) [cubic]: sqrt(-0.0003910396077712046Q+0.0014680834394353603)
-* Qmin (amu^1/2 ang): 1.0925735530627656
-* hbar*Omega (eV) @ Q=Qmin: 0.032262112543733165
-*
-* Fitted by quadratic equation: 
-[ 0.15221481 -0.34083059  0.17851258]
-* hbar*Omega (eV) [quadratic]: 0.035673009903143274
-* Qmin (amu^1/2 ang): 1.1195710046420646
+* ground state *
+[ 1.81952080e-01 -2.68421024e-02  1.14754819e-07]
+* hbar*Omegag (eV) [quadratic]: 0.03900226288585594
+* Qming (amu^1/2 ang): 0.07376146064706939
+* excited state *
+[ 0.15001192 -0.34164542  0.17889883]
+* hbar*Omegae (eV) [quadratic]: 0.03541393452079344
+* Qmine (amu^1/2 ang): 1.1387275688420881
 *** check the parameters in ccd ***
-* Absorption energy (eV):  2.599
-* Emission energy (eV):  2.216
-* EFCg = Ee - Eg (eV):  0.214
-* EFCe = Eg* - Ee* (eV):  0.169
-* Stokes shift (@ 0K) (eV):  0.383
-* Zero phonon photoemission line (eV):  2.43
-* FWHM (@ 0K) (eV):  0.22017831611536948
-* DeltaR (ang):  0.1762540268142144
-* DeltaQ (sqrt(amu)*ang):  1.0968097604647857
-* DeltaQ[1:3]:  [0.87597928 0.51789298 0.40919287]
-* hbar*Omegag (eV):  0.04211259674589987
-* hbar*Omegae (eV):  0.032262112543733165
-* Sabs:  5.238342646375395
-* Sem:  5.081614921331948
+* Absorption energy (eV):  -46620.43462675416
+* Emission energy (eV):  -46620.81896664294
+* Absorption energy (@ 298.0K) (eV):  -46620.445178064416
+* Emission energy (@ 298.0K) (eV):  -46620.80105809729
+* EFCg = Ee - Eg (eV):  0.21837321156809336
+* EFCe = Eg* - Ee* (eV):  0.16596667720783198
+* Stokes shift (@ 0K) (eV):  0.3843398887765943
+* Zero phonon photoemission line (eV):  -46620.60059343137
+* FWHM_em (@ 0K) (eV):  0.22657150733963236
+* FWHM_abs (@ 0K) (eV):  0.171351160211951
+* FWHM_em (@ 298.0K) (eV):  0.3037978493971633
+* FWHM_abs (@ 298.0K) (eV):  0.20877650029605846
+* DeltaR (ang):  1.5335257053108255e-05
+* DeltaQ (sqrt(amu)*ang):  1.0825199863414559
+* DeltaQ[1:3] (sqrt(amu)*ang):  [0.8645666  0.51114562 0.40386171]
+* hbar*Omegag (eV):  0.04197746552655754
+* hbar*Omegae (eV):  0.03221939020510329
+* Sabs:  5.151142717205871
+* Sem:  5.202153317949531
 *
-*** PLOT 1D-CCD ***
-*** PLOT LINE SHAPE ***
-*** PLOT TEMPERATURE DEPENDENCE OF E_EM & E_ABS ***
-*** PLOT TEMPERATURE DEPENDENCE OF STOKES SHIFT ***
-*** PLOT TEMPERATURE DEPENDENCE OF FWHM ***
+* --- NO PLOT --- *
 * --- FINISH CALCULATIONS OF STOKES SHIFT--- *
 * --- All calculations are finished! --- *
-* Computation time: 84.70582580566406 (sec)
+* Computation time: 3516.401577949524 (sec)
 *
